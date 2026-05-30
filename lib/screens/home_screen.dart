@@ -10,6 +10,7 @@ import '../widgets/section_header.dart';
 import 'ai_recommend_screen.dart';
 import 'brewing_guide_screen.dart';
 import 'gift_customize_screen.dart';
+import 'notification_screen.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
 import 'solar_term_screen.dart';
@@ -124,7 +125,11 @@ class _TopBar extends StatelessWidget {
               onPressed: onSearch,
               icon: const Icon(Icons.search, color: AppColors.charcoalBlack),
             ),
-            const Icon(Icons.notifications_none_rounded, color: AppColors.charcoalBlack),
+            IconButton(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
+              icon: const Icon(Icons.notifications_none_rounded, color: AppColors.charcoalBlack),
+            ),
           ],
         ),
       ],

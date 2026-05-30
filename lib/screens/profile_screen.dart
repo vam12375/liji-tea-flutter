@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
 
+import '../models/account_models.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/soft_card.dart';
+import 'address_screen.dart';
+import 'after_sale_screen.dart';
 import 'coupon_screen.dart';
+import 'customer_service_screen.dart';
 import 'favorites_screen.dart';
-import 'logistics_screen.dart';
+import 'feedback_screen.dart';
+import 'footprint_screen.dart';
+import 'notification_screen.dart';
+import 'order_list_screen.dart';
+import 'points_screen.dart';
+import 'settings_screen.dart';
 
 /// 我的 — profile, order shortcuts, and a menu list.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  void _push(BuildContext context, Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +32,9 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(
             AppSpacing.screenMargin, AppSpacing.md, AppSpacing.screenMargin, AppSpacing.xl),
         children: [
-          _header(),
+          _header(context),
           const SizedBox(height: AppSpacing.md),
-          _statsRow(),
+          _statsRow(context),
           const SizedBox(height: AppSpacing.md),
           _orderCard(context),
           const SizedBox(height: AppSpacing.md),
@@ -31,7 +44,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _header() {
+  Widget _header(BuildContext context) {
     return Row(
       children: [
         Container(
@@ -66,24 +79,43 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
         ),
-        const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_none, color: AppColors.textSecondary),
+              onPressed: () => _push(context, const NotificationScreen()),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
+              onPressed: () => _push(context, const SettingsScreen()),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _statsRow() {
-    const items = [('128', '积分'), ('5', '优惠券'), ('12', '收藏'), ('3', '足迹')];
+  Widget _statsRow(BuildContext context) {
+    final items = <(String, String, VoidCallback)>[
+      ('128', '积分', () => _push(context, const PointsScreen())),
+      ('5', '优惠券', () => _push(context, const CouponScreen())),
+      ('12', '收藏', () => _push(context, const FavoritesScreen())),
+      ('3', '足迹', () => _push(context, const FootprintScreen())),
+    ];
     return SoftCard(
       child: Row(
         children: [
           for (final it in items)
             Expanded(
-              child: Column(
-                children: [
-                  Text(it.$1, style: AppTypography.serif(size: 20, weight: FontWeight.w700, color: AppColors.inkGreen)),
-                  const SizedBox(height: 2),
-                  Text(it.$2, style: AppTypography.caption),
-                ],
+              child: GestureDetector(
+                onTap: it.$3,
+                child: Column(
+                  children: [
+                    Text(it.$1, style: AppTypography.serif(size: 20, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                    const SizedBox(height: 2),
+                    Text(it.$2, style: AppTypography.caption),
+                  ],
+                ),
               ),
             ),
         ],
@@ -92,12 +124,16 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _orderCard(BuildContext context) {
-    const orders = [
-      (Icons.account_balance_wallet_outlined, '待付款'),
-      (Icons.inventory_2_outlined, '待发货'),
-      (Icons.local_shipping_outlined, '待收货'),
-      (Icons.rate_review_outlined, '待评价'),
-      (Icons.support_agent_outlined, '退款/售后'),
+    final orders = <(IconData, String, VoidCallback)>[
+      (Icons.account_balance_wallet_outlined, '待付款',
+          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingPay))),
+      (Icons.inventory_2_outlined, '待发货',
+          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingShip))),
+      (Icons.local_shipping_outlined, '待收货',
+          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingReceive))),
+      (Icons.rate_review_outlined, '待评价',
+          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingReview))),
+      (Icons.support_agent_outlined, '退款/售后', () => _push(context, const AfterSaleScreen())),
     ];
     return SoftCard(
       child: Column(
@@ -107,7 +143,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Text('我的订单', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
               GestureDetector(
-                onTap: () {},
+                onTap: () => _push(context, const OrderListScreen()),
                 child: Row(children: [
                   Text('全部订单', style: AppTypography.caption),
                   const Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
@@ -121,8 +157,7 @@ class ProfileScreen extends StatelessWidget {
               for (final o in orders)
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const LogisticsScreen())),
+                    onTap: o.$3,
                     child: Column(
                       children: [
                         Icon(o.$1, size: 24, color: AppColors.pineGreen),
@@ -145,11 +180,11 @@ class ProfileScreen extends StatelessWidget {
           MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
       (Icons.confirmation_number_outlined, '我的优惠券', () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const CouponScreen()))),
-      (Icons.location_on_outlined, '收货地址', () {}),
-      (Icons.history_outlined, '浏览足迹', () {}),
-      (Icons.feedback_outlined, '意见反馈', () {}),
-      (Icons.headset_mic_outlined, '联系客服', () {}),
-      (Icons.settings_outlined, '设置', () {}),
+      (Icons.location_on_outlined, '收货地址', () => _push(context, const AddressScreen())),
+      (Icons.history_outlined, '浏览足迹', () => _push(context, const FootprintScreen())),
+      (Icons.feedback_outlined, '意见反馈', () => _push(context, const FeedbackScreen())),
+      (Icons.headset_mic_outlined, '联系客服', () => _push(context, const CustomerServiceScreen())),
+      (Icons.settings_outlined, '设置', () => _push(context, const SettingsScreen())),
     ];
     return SoftCard(
       padding: EdgeInsets.zero,
