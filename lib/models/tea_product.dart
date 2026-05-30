@@ -29,6 +29,15 @@ class TeaProduct {
   final List<String> specs; // 50g / 100g / 250g
 }
 
+/// A line item in the shopping cart (购物车).
+class CartItem {
+  const CartItem({required this.product, required this.spec, required this.quantity});
+
+  final TeaProduct product;
+  final String spec; // 50g / 300ml ...
+  final int quantity;
+}
+
 /// A labelled product attribute shown on the detail page (采摘 / 产地 …).
 class ProductAttribute {
   const ProductAttribute({required this.label, required this.value, required this.icon});

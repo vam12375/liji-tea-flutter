@@ -6,6 +6,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/tea_image.dart';
+import 'reviews_screen.dart';
 
 /// 商品详情 — product detail screen, mirroring the 明前龙井 / 山水茶壶 design.
 class ProductDetailScreen extends StatefulWidget {
@@ -76,6 +77,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               specs: product.specs,
               selected: _selectedSpec,
               onSelected: (i) => setState(() => _selectedSpec = i),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ReviewsScreen(productName: product.name),
+                ),
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: AppColors.divider)),
+                ),
+                child: Row(
+                  children: [
+                    Text('商品评价', style: AppTypography.h3),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text('(1286)', style: AppTypography.caption),
+                    const Spacer(),
+                    const Icon(Icons.star, size: 14, color: AppColors.gold),
+                    Text(' 4.9 好评', style: AppTypography.caption),
+                    const Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
