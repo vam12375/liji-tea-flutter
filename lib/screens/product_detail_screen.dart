@@ -108,18 +108,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
       bottomNavigationBar: _BottomBar(
         price: product.price,
-        unit: product.unit,
+        unit: product.specs.isNotEmpty ? product.specs[_selectedSpec] : product.unit,
         onAdd: () => _showAdded(context),
       ),
     );
   }
 
   void _showAdded(BuildContext context) {
+    final product = widget.product;
+    final spec = product.specs.isNotEmpty ? product.specs[_selectedSpec] : product.unit;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text('已将「${widget.product.name}」加入购物车',
+          content: Text('已将「${product.name}」($spec) 加入购物车',
               style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
           backgroundColor: AppColors.inkGreen,
           behavior: SnackBarBehavior.floating,
