@@ -72,6 +72,14 @@ class AppNotification {
   final String time;
   final IconData icon;
   final bool unread;
+
+  AppNotification copyWith({bool? unread}) => AppNotification(
+        title: title,
+        body: body,
+        time: time,
+        icon: icon,
+        unread: unread ?? this.unread,
+      );
 }
 
 /// A single points ledger entry (积分明细).

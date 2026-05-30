@@ -9,18 +9,33 @@ import '../widgets/soft_card.dart';
 import '../widgets/status_view.dart';
 
 /// 消息通知 — notification centre.
-class NotificationScreen extends StatelessWidget {
+class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
   @override
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  late List<AppNotification> _items = List.of(AccountData.notifications);
+
+  bool get _hasUnread => _items.any((n) => n.unread);
+
+  void _markAllRead() {
+    setState(() {
+      _items = [for (final n in _items) n.copyWith(unread: false)];
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final items = AccountData.notifications;
+    final items = _items;
     return Scaffold(
       appBar: AppBar(
         title: Text('消息通知', style: AppTypography.h3),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: _hasUnread ? _markAllRead : null,
             child: Text('全部已读', style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
           ),
         ],
