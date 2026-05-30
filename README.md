@@ -12,7 +12,13 @@
 
 演示流程:首页 → 点商品进入详情 → 选择规格 → 收藏 → 加入购物车(提示)→ 底部导航切换。
 
-账户/设置页演示(订单 / 地址 / 积分 / 客服 / 设置 / 登录 / 消息通知):[docs/account-screens-demo.mp4](docs/account-screens-demo.mp4)
+账户/设置页演示(订单 / 地址 / 积分 / 客服 / 设置 / 登录 / 消息通知):
+
+<p align="center">
+  <img src="docs/account-screens-demo.gif" alt="账户/设置页演示:我的订单 → 收货地址 → 积分中心 → 在线客服 → 设置 → 退出登录 → 登录 → 消息通知" width="700" />
+</p>
+
+完整高清录屏:[docs/account-screens-demo.mp4](docs/account-screens-demo.mp4)
 
 ## 功能
 
