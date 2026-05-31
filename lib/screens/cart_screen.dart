@@ -59,6 +59,7 @@ class _CartScreenState extends State<CartScreen> {
               ],
             ),
           ),
+          _FreeShippingBanner(total: _total),
           const SizedBox(height: AppSpacing.xs),
           Expanded(
             child: ListView(
@@ -73,7 +74,13 @@ class _CartScreenState extends State<CartScreen> {
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => ProductDetailScreen(product: _lines[i].product))),
                   ),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.lg),
+                _RecommendSection(
+                  products: SampleData.cartRecommended,
+                  onTap: (p) => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ProductDetailScreen(product: p))),
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 _CouponRow(onTap: () {
                   Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const CouponScreen()));
@@ -283,7 +290,7 @@ class _CartBottomBar extends StatelessWidget {
                             size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
                   ],
                 ),
-                Text('已优惠 ¥0', style: AppTypography.caption),
+                Text('已优惠 ¥30', style: AppTypography.caption),
               ],
             ),
             const SizedBox(width: AppSpacing.md),
@@ -291,6 +298,123 @@ class _CartBottomBar extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// 满 ¥299 可享免运费 progress banner shown under the cart header.
+class _FreeShippingBanner extends StatelessWidget {
+  const _FreeShippingBanner({required this.total});
+  final int total;
+
+  static const int _threshold = 299;
+
+  @override
+  Widget build(BuildContext context) {
+    final reached = total >= _threshold;
+    final remain = (_threshold - total).clamp(0, _threshold);
+    final progress = (total / _threshold).clamp(0.0, 1.0);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenMargin, AppSpacing.xs, AppSpacing.screenMargin, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              style: AppTypography.caption,
+              children: reached
+                  ? const [TextSpan(text: '已满 ¥$_threshold,已为你免运费')]
+                  : [
+                      const TextSpan(text: '满 ¥$_threshold 可享免运费,还差 '),
+                      TextSpan(
+                          text: '¥$remain',
+                          style: AppTypography.sans(
+                              size: 12, weight: FontWeight.w600, color: AppColors.inkGreen)),
+                    ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.chip),
+            child: LinearProgressIndicator(
+              value: reached ? 1.0 : progress,
+              minHeight: 4,
+              backgroundColor: AppColors.ricePaperGray,
+              valueColor: const AlwaysStoppedAnimation(AppColors.inkGreen),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 为你推荐 — cross-sell list at the bottom of the cart.
+class _RecommendSection extends StatelessWidget {
+  const _RecommendSection({required this.products, required this.onTap});
+  final List<TeaProduct> products;
+  final ValueChanged<TeaProduct> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('为你推荐', style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
+            const Spacer(),
+            const Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        for (final p in products)
+          InkWell(
+            onTap: () => onTap(p),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.image),
+                    child: p.thumbAsset != null
+                        ? Image.asset(p.thumbAsset!, width: 64, height: 64, fit: BoxFit.cover)
+                        : SizedBox(
+                            width: 64,
+                            height: 64,
+                            child: TeaImage(
+                                swatch: p.swatch, radius: AppRadius.image, iconSize: 24),
+                          ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(p.name,
+                            style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
+                        const SizedBox(height: 2),
+                        Text(p.tagline, style: AppTypography.caption),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text('¥${p.price}',
+                            style: AppTypography.serif(
+                                size: 16, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                        color: AppColors.inkGreen, shape: BoxShape.circle),
+                    child: const Icon(Icons.add, size: 18, color: AppColors.riceWhite),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

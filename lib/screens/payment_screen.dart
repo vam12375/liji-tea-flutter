@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
 import 'payment_success_screen.dart';
 
@@ -20,13 +19,17 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   int _method = 0;
 
-  static const _methods = <(IconData, String, String?)>[
-    (Icons.wechat, '微信支付', null),
-    (Icons.account_balance_wallet_outlined, '支付宝支付', null),
-    (Icons.credit_card_outlined, '银联支付', null),
-    (Icons.apple, 'Apple Pay', null),
-    (Icons.calendar_month_outlined, '花呗分期', '可分 3/6/12 期'),
+  static const _methods = <_PayMethod>[
+    _PayMethod(Color(0xFF07C160), Icons.wechat, '微信支付', null),
+    _PayMethod(Color(0xFF1677FF), Icons.account_balance_wallet, '支付宝支付', null),
+    _PayMethod(Color(0xFFE60012), Icons.credit_card, '银联支付', null),
+    _PayMethod(Color(0xFF000000), Icons.apple, 'Apple Pay', null),
+    _PayMethod(Color(0xFF1296DB), Icons.calendar_month, '花呗分期', '可分 3/6/12 期'),
   ];
+
+  void _pay() => Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => PaymentSuccessScreen(total: widget.total)),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -46,9 +49,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text('¥', style: AppTypography.serif(size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
-                      Text('${widget.total}.00',
-                          style: AppTypography.serif(size: 40, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                      Text('¥',
+                          style: AppTypography.serif(
+                              size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                      Text('${widget.total}',
+                          style: AppTypography.serif(
+                              size: 44, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                      Text('.00',
+                          style: AppTypography.serif(
+                              size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xs),
@@ -59,66 +68,84 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: AppSpacing.xl),
             Text('选择支付方式', style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
             const SizedBox(height: AppSpacing.md),
-            SoftCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  for (var i = 0; i < _methods.length; i++)
-                    InkWell(
-                      onTap: () => setState(() => _method = i),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md, vertical: AppSpacing.md),
-                        decoration: BoxDecoration(
-                          border: i == _methods.length - 1
-                              ? null
-                              : const Border(bottom: BorderSide(color: AppColors.divider)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(_methods[i].$1, color: AppColors.pineGreen),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(_methods[i].$2, style: AppTypography.sans(size: 15)),
-                            if (_methods[i].$3 != null) ...[
-                              const SizedBox(width: AppSpacing.xs),
-                              Text(_methods[i].$3!, style: AppTypography.caption),
-                            ],
-                            const Spacer(),
-                            _Radio(selected: _method == i),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
+            for (var i = 0; i < _methods.length; i++) ...[
+              _MethodTile(
+                method: _methods[i],
+                selected: _method == i,
+                onTap: () {
+                  setState(() => _method = i);
+                  _pay();
+                },
               ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.lock_outline, size: 14, color: AppColors.textTertiary),
-                  const SizedBox(width: AppSpacing.xxs),
-                  Text('安全加密支付,保障资金安全', style: AppTypography.caption),
-                ],
-              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            Opacity(
+              opacity: 0.5,
+              child: Image.asset('assets/images/splash_mountains.png',
+                  height: 140, fit: BoxFit.contain),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(AppSpacing.screenMargin, AppSpacing.sm,
-            AppSpacing.screenMargin, AppSpacing.sm + MediaQuery.of(context).padding.bottom),
-        decoration: const BoxDecoration(
-          color: AppColors.riceWhite,
-          border: Border(top: BorderSide(color: AppColors.divider)),
-        ),
-        child: PrimaryButton(
-          label: '确认支付 ¥${widget.total}',
-          expand: true,
-          onPressed: () => Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => PaymentSuccessScreen(total: widget.total)),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md, top: AppSpacing.xs),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.shield_outlined, size: 14, color: AppColors.textTertiary),
+              const SizedBox(width: AppSpacing.xxs),
+              Text('安全加密支付,保障资金安全', style: AppTypography.caption),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PayMethod {
+  const _PayMethod(this.color, this.icon, this.label, this.sub);
+  final Color color;
+  final IconData icon;
+  final String label;
+  final String? sub;
+}
+
+class _MethodTile extends StatelessWidget {
+  const _MethodTile({required this.method, required this.selected, required this.onTap});
+  final _PayMethod method;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SoftCard(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: method.color,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(method.icon, size: 20, color: Colors.white),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Text(method.label, style: AppTypography.sans(size: 15)),
+            if (method.sub != null) ...[
+              const SizedBox(width: AppSpacing.sm),
+              Text(method.sub!, style: AppTypography.caption),
+            ],
+            const Spacer(),
+            _Radio(selected: selected),
+          ],
         ),
       ),
     );
@@ -132,14 +159,14 @@ class _Radio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 20,
-      height: 20,
+      width: 22,
+      height: 22,
       decoration: BoxDecoration(
         color: selected ? AppColors.inkGreen : Colors.transparent,
         shape: BoxShape.circle,
         border: Border.all(color: selected ? AppColors.inkGreen : AppColors.textTertiary),
       ),
-      child: selected ? const Icon(Icons.check, size: 12, color: AppColors.riceWhite) : null,
+      child: selected ? const Icon(Icons.check, size: 14, color: AppColors.riceWhite) : null,
     );
   }
 }

@@ -238,6 +238,7 @@ class SampleData {
     price: 98,
     unit: '150ml',
     swatch: Color(0xFFE3DED2),
+    thumbAsset: 'assets/images/rec_gaiwan.png',
     specs: ['白瓷', '青瓷'],
   );
 
@@ -250,6 +251,7 @@ class SampleData {
     price: 28,
     unit: '件',
     swatch: Color(0xFFC8B68C),
+    thumbAsset: 'assets/images/rec_chaze.png',
     specs: ['竹制'],
   );
 
@@ -297,6 +299,11 @@ class SampleData {
 
   static const List<TeaProduct> recommended = [
     longjing, biluochun, anjiBaicha, shanshuiPot,
+  ];
+
+  /// 购物车「为你推荐」— cross-sell items below the cart list.
+  static const List<TeaProduct> cartRecommended = [
+    baiciGaiwan, chaze,
   ];
 
   /// 茶语 quote shown on the home screen.
