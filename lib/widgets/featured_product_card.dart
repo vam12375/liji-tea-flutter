@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'add_button.dart';
@@ -28,14 +29,8 @@ class FeaturedProductCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
           color: AppColors.cardSurface,
-          borderRadius: BorderRadius.circular(AppRadius.productCard),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0F000000),
-              blurRadius: 24,
-              offset: Offset(0, 8),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppRadius.cardMedium),
+          boxShadow: AppShadows.cardElevated,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
