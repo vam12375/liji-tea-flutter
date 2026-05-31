@@ -326,6 +326,11 @@ class SampleData {
   ];
 
   static const List<String> searchHistory = ['明前龙井', '茶具', '白茶', '玻璃茶壶'];
+
+  /// 搜索页「猜你想搜」— recommended product cards below the trending list.
+  static const List<TeaProduct> guessYouWant = [
+    longjing, biluochun, anjiBaicha, chunshanGift,
+  ];
 }
 
 /// A circular quick-entry shortcut on the home screen.

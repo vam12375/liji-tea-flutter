@@ -5,9 +5,11 @@ import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../widgets/add_button.dart';
 import '../widgets/cart_snack.dart';
 import '../widgets/product_list_tile.dart';
 import '../widgets/section_header.dart';
+import '../widgets/tea_image.dart';
 import 'product_detail_screen.dart';
 
 /// 搜索 — hot keywords, history, trending, and a no-result state.
@@ -233,7 +235,107 @@ class _DiscoverView extends StatelessWidget {
               ),
             ),
           ),
+        const SizedBox(height: AppSpacing.xl),
+        Text('猜你想搜', style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
+        const SizedBox(height: AppSpacing.md),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: AppSpacing.md,
+          crossAxisSpacing: AppSpacing.md,
+          childAspectRatio: 0.78,
+          children: [
+            for (final p in SampleData.guessYouWant)
+              _GuessCard(
+                product: p,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p)),
+                ),
+                onAdd: () => showCartSnack(context, p.name),
+              ),
+          ],
+        ),
       ],
+    );
+  }
+}
+
+class _GuessCard extends StatelessWidget {
+  const _GuessCard({required this.product, required this.onTap, required this.onAdd});
+
+  final TeaProduct product;
+  final VoidCallback onTap;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.cardSurface,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: AppColors.divider),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1.5,
+              child: TeaImage(
+                swatch: product.swatch,
+                assetPath: product.thumbAsset,
+                radius: 0,
+                icon: Icons.local_cafe_outlined,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppColors.ricePaperGray.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(product.category,
+                            style: AppTypography.sans(
+                                size: 10, color: AppColors.textSecondary)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Text('¥${product.price}',
+                            style: AppTypography.sans(
+                                size: 15,
+                                weight: FontWeight.w700,
+                                color: AppColors.inkGreen)),
+                      ),
+                      AddButton(onPressed: onAdd, size: 28),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
