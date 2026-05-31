@@ -14,6 +14,8 @@ class TeaProduct {
     this.description,
     this.attributes = const [],
     this.specs = const [],
+    this.imageAsset,
+    this.thumbAsset,
   });
 
   final String id;
@@ -27,6 +29,12 @@ class TeaProduct {
   final String? description;
   final List<ProductAttribute> attributes;
   final List<String> specs; // 50g / 100g / 250g
+
+  /// Full-bleed product image shown on the detail screen.
+  final String? imageAsset;
+
+  /// Square thumbnail shown on home / list cards.
+  final String? thumbAsset;
 }
 
 /// A line item in the shopping cart (购物车).

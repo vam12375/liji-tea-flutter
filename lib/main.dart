@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'app.dart';
+import 'screens/onboarding_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -17,7 +17,7 @@ class LijiTeaApp extends StatelessWidget {
       title: '李记·TEA',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const AppShell(),
+      home: const OnboardingScreen(),
     );
   }
 }

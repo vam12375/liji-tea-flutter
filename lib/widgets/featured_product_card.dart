@@ -43,7 +43,7 @@ class FeaturedProductCard extends StatelessWidget {
             SizedBox(
               width: 96,
               height: 96,
-              child: TeaImage(swatch: product.swatch),
+              child: TeaImage(swatch: product.swatch, assetPath: product.thumbAsset),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(

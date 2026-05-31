@@ -2,26 +2,34 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// A decorative placeholder standing in for product photography.
-///
-/// Until real imagery / a CDN is wired up, this renders a soft "ink wash"
-/// gradient with a tea-bowl motif so layouts read correctly.
+/// Renders product imagery. When [assetPath] is supplied the real photograph
+/// is shown; otherwise a soft "ink wash" placeholder stands in for it.
 class TeaImage extends StatelessWidget {
   const TeaImage({
     super.key,
     required this.swatch,
+    this.assetPath,
     this.icon = Icons.local_cafe,
     this.radius = 12,
     this.iconSize = 40,
+    this.fit = BoxFit.cover,
   });
 
   final Color swatch;
+  final String? assetPath;
   final IconData icon;
   final double radius;
   final double iconSize;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
+    if (assetPath != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: Image.asset(assetPath!, fit: fit),
+      );
+    }
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),

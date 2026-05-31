@@ -23,7 +23,7 @@ class _AppShellState extends State<AppShell> {
   static const _tabs = <_TabItem>[
     _TabItem('首页', Icons.home_outlined, Icons.home),
     _TabItem('分类', Icons.grid_view_outlined, Icons.grid_view),
-    _TabItem('茶文化', Icons.spa_outlined, Icons.spa),
+    _TabItem('茶席', Icons.rice_bowl_outlined, Icons.rice_bowl),
     _TabItem('购物车', Icons.shopping_cart_outlined, Icons.shopping_cart),
     _TabItem('我的', Icons.person_outline, Icons.person),
   ];

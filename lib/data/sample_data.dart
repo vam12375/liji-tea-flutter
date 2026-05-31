@@ -19,6 +19,8 @@ class SampleData {
     price: 168,
     unit: '50g',
     swatch: Color(0xFFA9B89A),
+    imageAsset: 'assets/images/tea_detail.png',
+    thumbAsset: 'assets/images/tea_thumb.png',
     description: '甄选明前头采芽叶,遵循传统工艺,手工炒制而成。'
         '干茶扁平挺秀,色泽嫩绿光润;汤色嫩绿明亮,香气清雅持久,滋味鲜爽甘醇,回味悠长。',
     attributes: [
@@ -211,6 +213,8 @@ class SampleData {
     price: 328,
     unit: '300ml',
     swatch: Color(0xFF4C5B52),
+    imageAsset: 'assets/images/teapot_detail.png',
+    thumbAsset: 'assets/images/teapot_detail.png',
     description: '灵感源自山水之间的宁静之美,壶身纹理如远山起伏,釉色温润,手感细腻。',
     attributes: [
       ProductAttribute(label: '材质', value: '陶瓷', icon: Icons.coffee_outlined),
