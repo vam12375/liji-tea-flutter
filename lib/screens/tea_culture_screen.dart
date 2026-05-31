@@ -25,6 +25,19 @@ class TeaCultureScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(
               AppSpacing.screenMargin, AppSpacing.sm, AppSpacing.screenMargin, AppSpacing.xl),
           children: [
+          if (Navigator.of(context).canPop())
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).maybePop(),
+                behavior: HitTestBehavior.opaque,
+                child: const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(Icons.arrow_back, color: AppColors.charcoalBlack, size: 22),
+                ),
+              ),
+            ),
           Text('茶文化', style: AppTypography.h2),
           const SizedBox(height: AppSpacing.xs),
           Text('一盏茶汤,半卷诗书,在茶香中体味东方生活美学。', style: AppTypography.body),
