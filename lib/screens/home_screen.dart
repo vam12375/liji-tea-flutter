@@ -9,11 +9,9 @@ import '../widgets/featured_product_card.dart';
 import '../widgets/section_header.dart';
 import 'ai_recommend_screen.dart';
 import 'brewing_guide_screen.dart';
-import 'gift_customize_screen.dart';
 import 'notification_screen.dart';
 import 'product_detail_screen.dart';
 import 'search_screen.dart';
-import 'solar_term_screen.dart';
 
 /// 首页 — the home screen, mirroring the LIJI·TEA home design.
 class HomeScreen extends StatelessWidget {
@@ -41,37 +39,20 @@ class HomeScreen extends StatelessWidget {
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screenMargin,
+          AppSpacing.lg,
           AppSpacing.xs,
-          AppSpacing.screenMargin,
+          AppSpacing.lg,
           AppSpacing.xl,
         ),
         children: [
-          _TopBar(
-            onSearch: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SearchScreen())),
-          ),
-          const SizedBox(height: AppSpacing.lg),
+          const _TopBar(),
+          const SizedBox(height: AppSpacing.md),
           _GreetingBlock(greeting: _greeting()),
-          const SizedBox(height: AppSpacing.lg),
-          _SearchBar(
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SearchScreen())),
-          ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.xl),
           _QuickEntries(
             onSelectTab: onSelectTab,
-            onBrewing: () => Navigator.of(context).push(
+            onCourse: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const BrewingGuideScreen())),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          _FeatureRow(
-            onAi: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AiRecommendScreen())),
-            onGift: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const GiftCustomizeScreen())),
-            onSolar: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SolarTermScreen())),
           ),
           const SizedBox(height: AppSpacing.xl),
           SectionHeader(
@@ -97,7 +78,8 @@ class HomeScreen extends StatelessWidget {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text('已将「${product.name}」加入购物车', style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
+          content: Text('已将「${product.name}」加入购物车',
+              style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
           backgroundColor: AppColors.inkGreen,
           behavior: SnackBarBehavior.floating,
         ),
@@ -106,9 +88,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onSearch});
-
-  final VoidCallback onSearch;
+  const _TopBar();
 
   @override
   Widget build(BuildContext context) {
@@ -117,97 +97,31 @@ class _TopBar extends StatelessWidget {
       children: [
         Text(
           'LIJI·TEA',
-          style: AppTypography.latin(size: 26, weight: FontWeight.w600, letterSpacing: 3, color: AppColors.inkGreen),
+          style: AppTypography.latin(
+              size: 26, weight: FontWeight.w600, letterSpacing: 3, color: AppColors.inkGreen),
         ),
         Row(
           children: [
             IconButton(
-              onPressed: onSearch,
-              icon: const Icon(Icons.search, color: AppColors.charcoalBlack),
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const SearchScreen())),
+              icon: const Icon(Icons.search_rounded, color: AppColors.charcoalBlack),
+              splashRadius: 22,
+            ),
+            IconButton(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const AiRecommendScreen())),
+              icon: const Icon(Icons.auto_awesome_outlined, color: AppColors.charcoalBlack),
+              splashRadius: 22,
             ),
             IconButton(
               onPressed: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
               icon: const Icon(Icons.notifications_none_rounded, color: AppColors.charcoalBlack),
+              splashRadius: 22,
             ),
           ],
         ),
-      ],
-    );
-  }
-}
-
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.ricePaperGray.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(AppRadius.chip),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.search, size: 18, color: AppColors.textTertiary),
-            const SizedBox(width: AppSpacing.xs),
-            Text('搜索茶叶 / 茶具 / 文章',
-                style: AppTypography.sans(size: 14, color: AppColors.textTertiary)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureRow extends StatelessWidget {
-  const _FeatureRow({required this.onAi, required this.onGift, required this.onSolar});
-
-  final VoidCallback onAi;
-  final VoidCallback onGift;
-  final VoidCallback onSolar;
-
-  @override
-  Widget build(BuildContext context) {
-    final items = <(IconData, String, String, VoidCallback)>[
-      (Icons.auto_awesome, 'AI 茶推荐', '找到适合你的茶', onAi),
-      (Icons.card_giftcard_outlined, '茶礼定制', '心意,亲手定制', onGift),
-      (Icons.calendar_month_outlined, '节气茶单', '应时而饮', onSolar),
-    ];
-    return Row(
-      children: [
-        for (final it in items)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-              child: GestureDetector(
-                onTap: it.$4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardSurface,
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                    border: Border.all(color: AppColors.divider),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(it.$1, color: AppColors.pineGreen),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(it.$2, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
-                      const SizedBox(height: 2),
-                      Text(it.$3, style: AppTypography.caption, textAlign: TextAlign.center),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -227,53 +141,47 @@ class _GreetingBlock extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(greeting, style: AppTypography.serif(size: 26, weight: FontWeight.w600)),
               const SizedBox(height: AppSpacing.xs),
+              Text(greeting, style: AppTypography.serif(size: 28, weight: FontWeight.w600)),
+              const SizedBox(height: AppSpacing.sm),
               Text('愿一杯好茶,陪你度过美好时光。', style: AppTypography.body),
+              const SizedBox(height: AppSpacing.md),
+              Container(width: 28, height: 1, color: AppColors.gold),
             ],
           ),
         ),
-        Icon(Icons.spa_outlined, size: 40, color: AppColors.pineGreen.withValues(alpha: 0.7)),
+        Image.asset('assets/images/bamboo.png', width: 116, fit: BoxFit.contain),
       ],
     );
   }
 }
 
-
 class _QuickEntries extends StatelessWidget {
-  const _QuickEntries({this.onSelectTab, required this.onBrewing});
+  const _QuickEntries({this.onSelectTab, required this.onCourse});
 
   final ValueChanged<int>? onSelectTab;
-  final VoidCallback onBrewing;
+  final VoidCallback onCourse;
 
   @override
   Widget build(BuildContext context) {
-    final entries = SampleData.quickEntries;
-    final actions = <VoidCallback>[
-      () => onSelectTab?.call(1), // 精选茶品 → 分类
-      () => onSelectTab?.call(1), // 茶具器物 → 分类
-      onBrewing, // 茶艺课程 → 冲泡指南
-      () => onSelectTab?.call(2), // 茶生活 → 茶文化
+    final entries = <(String, String, VoidCallback)>[
+      ('assets/images/entry_tea.png', '精选茶品', () => onSelectTab?.call(1)),
+      ('assets/images/entry_ware.png', '茶具器物', () => onSelectTab?.call(1)),
+      ('assets/images/entry_course.png', '茶艺课程', onCourse),
+      ('assets/images/entry_life.png', '茶生活', () => onSelectTab?.call(2)),
     ];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        for (var i = 0; i < entries.length; i++)
+        for (final e in entries)
           GestureDetector(
-            onTap: actions[i],
+            behavior: HitTestBehavior.opaque,
+            onTap: e.$3,
             child: Column(
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: const BoxDecoration(
-                    color: AppColors.ricePaperGray,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(entries[i].icon, color: AppColors.inkGreen, size: 24),
-                ),
+                Image.asset(e.$1, width: 48, height: 48),
                 const SizedBox(height: AppSpacing.xs),
-                Text(entries[i].label, style: AppTypography.sans(size: 12, color: AppColors.textSecondary)),
+                Text(e.$2, style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
               ],
             ),
           ),
@@ -294,7 +202,8 @@ class _TeaQuote extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         Text(
           SampleData.teaQuote,
-          style: AppTypography.serif(size: 16, weight: FontWeight.w400, height: 1.8, color: AppColors.textSecondary),
+          style: AppTypography.serif(
+              size: 16, weight: FontWeight.w400, height: 1.8, color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.xs),
         Align(

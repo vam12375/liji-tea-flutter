@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'app.dart';
+import 'screens/onboarding_screen.dart';
+import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -17,7 +18,27 @@ class LijiTeaApp extends StatelessWidget {
       title: '李记·TEA',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const AppShell(),
+      home: const OnboardingScreen(),
+      // On wide (desktop / web) viewports, frame the mobile UI in a centred
+      // phone-width column. On real phones this is a no-op.
+      builder: (context, child) {
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            const phoneWidth = 420.0;
+            if (constraints.maxWidth <= phoneWidth + 24) return child!;
+            return ColoredBox(
+              color: AppColors.ricePaperGray,
+              child: Center(
+                child: SizedBox(
+                  width: phoneWidth,
+                  height: constraints.maxHeight,
+                  child: child,
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

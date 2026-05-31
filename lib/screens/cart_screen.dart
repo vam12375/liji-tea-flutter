@@ -22,10 +22,13 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  late List<_Line> _lines = [
+  late final List<_Line> _lines = [
     for (final c in SampleData.cart)
       _Line(product: c.product, spec: c.spec, quantity: c.quantity, selected: true),
   ];
+  bool _editing = false;
+
+  void _deleteSelected() => setState(() => _lines.removeWhere((l) => l.selected));
 
   int get _total {
     var sum = 0;
@@ -36,8 +39,6 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   bool get _allSelected => _lines.isNotEmpty && _lines.every((l) => l.selected);
-
-  void _clear() => setState(() => _lines = []);
 
   @override
   Widget build(BuildContext context) {
@@ -52,21 +53,14 @@ class _CartScreenState extends State<CartScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('购物车 (${_lines.length})', style: AppTypography.h2),
-                TextButton(onPressed: _clear, child: Text('清空', style: AppTypography.body)),
+                TextButton(
+                    onPressed: () => setState(() => _editing = !_editing),
+                    child: Text(_editing ? '完成' : '编辑', style: AppTypography.body)),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-              child: Text(
-                _total >= 299 ? '已满 ¥299,享免运费' : '满 ¥299 可享免运费,还差 ¥${299 - _total}',
-                style: AppTypography.sans(size: 12, color: AppColors.pineGreen),
-              ),
-            ),
-          ),
+          _FreeShippingBanner(total: _total),
+          const SizedBox(height: AppSpacing.xs),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
@@ -80,7 +74,13 @@ class _CartScreenState extends State<CartScreen> {
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => ProductDetailScreen(product: _lines[i].product))),
                   ),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.lg),
+                _RecommendSection(
+                  products: SampleData.cartRecommended,
+                  onTap: (p) => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ProductDetailScreen(product: p))),
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 _CouponRow(onTap: () {
                   Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const CouponScreen()));
@@ -91,6 +91,8 @@ class _CartScreenState extends State<CartScreen> {
           _CartBottomBar(
             allSelected: _allSelected,
             total: _total,
+            editing: _editing,
+            onDelete: _deleteSelected,
             onToggleAll: () {
               final next = !_allSelected;
               setState(() {
@@ -150,10 +152,16 @@ class _CartRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           GestureDetector(
             onTap: onTap,
-            child: SizedBox(
-              width: 72,
-              height: 72,
-              child: TeaImage(swatch: line.product.swatch, radius: AppRadius.image, iconSize: 28),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.image),
+              child: line.product.thumbAsset != null
+                  ? Image.asset(line.product.thumbAsset!, width: 72, height: 72, fit: BoxFit.cover)
+                  : SizedBox(
+                      width: 72,
+                      height: 72,
+                      child: TeaImage(
+                          swatch: line.product.swatch, radius: AppRadius.image, iconSize: 28),
+                    ),
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -237,12 +245,16 @@ class _CartBottomBar extends StatelessWidget {
   const _CartBottomBar({
     required this.allSelected,
     required this.total,
+    required this.editing,
+    required this.onDelete,
     required this.onToggleAll,
     required this.onCheckout,
   });
 
   final bool allSelected;
   final int total;
+  final bool editing;
+  final VoidCallback onDelete;
   final VoidCallback onToggleAll;
   final VoidCallback? onCheckout;
 
@@ -261,27 +273,148 @@ class _CartBottomBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.xs),
           Text('全选', style: AppTypography.sans(size: 14)),
           const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text('合计: ', style: AppTypography.caption),
-                  Text('¥$total',
-                      style: AppTypography.serif(
-                          size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
-                ],
-              ),
-              Text('已优惠 ¥30', style: AppTypography.caption),
-            ],
-          ),
-          const SizedBox(width: AppSpacing.md),
-          PrimaryButton(label: '去结算', onPressed: onCheckout),
+          if (editing) ...[
+            SecondaryButton(label: '删除', onPressed: onDelete),
+          ] else ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text('合计: ', style: AppTypography.caption),
+                    Text('¥$total',
+                        style: AppTypography.serif(
+                            size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                  ],
+                ),
+                Text('已优惠 ¥30', style: AppTypography.caption),
+              ],
+            ),
+            const SizedBox(width: AppSpacing.md),
+            PrimaryButton(label: '去结算', onPressed: onCheckout),
+          ],
         ],
       ),
+    );
+  }
+}
+
+/// 满 ¥299 可享免运费 progress banner shown under the cart header.
+class _FreeShippingBanner extends StatelessWidget {
+  const _FreeShippingBanner({required this.total});
+  final int total;
+
+  static const int _threshold = 299;
+
+  @override
+  Widget build(BuildContext context) {
+    final reached = total >= _threshold;
+    final remain = (_threshold - total).clamp(0, _threshold);
+    final progress = (total / _threshold).clamp(0.0, 1.0);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenMargin, AppSpacing.xs, AppSpacing.screenMargin, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              style: AppTypography.caption,
+              children: reached
+                  ? const [TextSpan(text: '已满 ¥$_threshold,已为你免运费')]
+                  : [
+                      const TextSpan(text: '满 ¥$_threshold 可享免运费,还差 '),
+                      TextSpan(
+                          text: '¥$remain',
+                          style: AppTypography.sans(
+                              size: 12, weight: FontWeight.w600, color: AppColors.inkGreen)),
+                    ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.chip),
+            child: LinearProgressIndicator(
+              value: reached ? 1.0 : progress,
+              minHeight: 4,
+              backgroundColor: AppColors.ricePaperGray,
+              valueColor: const AlwaysStoppedAnimation(AppColors.inkGreen),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 为你推荐 — cross-sell list at the bottom of the cart.
+class _RecommendSection extends StatelessWidget {
+  const _RecommendSection({required this.products, required this.onTap});
+  final List<TeaProduct> products;
+  final ValueChanged<TeaProduct> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('为你推荐', style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
+            const Spacer(),
+            const Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        for (final p in products)
+          InkWell(
+            onTap: () => onTap(p),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.image),
+                    child: p.thumbAsset != null
+                        ? Image.asset(p.thumbAsset!, width: 64, height: 64, fit: BoxFit.cover)
+                        : SizedBox(
+                            width: 64,
+                            height: 64,
+                            child: TeaImage(
+                                swatch: p.swatch, radius: AppRadius.image, iconSize: 24),
+                          ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(p.name,
+                            style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
+                        const SizedBox(height: 2),
+                        Text(p.tagline, style: AppTypography.caption),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text('¥${p.price}',
+                            style: AppTypography.serif(
+                                size: 16, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                        color: AppColors.inkGreen, shape: BoxShape.circle),
+                    child: const Icon(Icons.add, size: 18, color: AppColors.riceWhite),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -299,34 +432,74 @@ class _EmptyCart extends StatelessWidget {
           Text('购物车', style: AppTypography.h2),
           const SizedBox(height: AppSpacing.xxl),
           StatusView(
-            icon: Icons.shopping_basket_outlined,
+            image: 'assets/images/empty_cart.png',
             title: '购物车还是空的',
             subtitle: '去挑选心仪的茶叶,开启一段茶香之旅吧',
             actionLabel: '去逛逛',
             onAction: () {},
           ),
           const SizedBox(height: AppSpacing.xxl),
-          Center(child: Text('— 为你推荐 —', style: AppTypography.caption)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Expanded(child: Divider(color: AppColors.divider)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Text('为你推荐', style: AppTypography.caption),
+              ),
+              const Expanded(child: Divider(color: AppColors.divider)),
+            ],
+          ),
           const SizedBox(height: AppSpacing.md),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (final p in SampleData.recommended.take(3))
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: TeaImage(swatch: p.swatch, radius: AppRadius.image, iconSize: 28),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(p.name, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
-                        Text('¥${p.price}',
-                            style: AppTypography.serif(
-                                size: 14, weight: FontWeight.w600, color: AppColors.inkGreen)),
-                      ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(AppRadius.card),
+                      ),
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: p.thumbAsset != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(AppRadius.image),
+                                    child: Image.asset(p.thumbAsset!, fit: BoxFit.cover))
+                                : TeaImage(swatch: p.swatch, radius: AppRadius.image, iconSize: 28),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(p.name, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
+                          const SizedBox(height: 2),
+                          Text(p.tagline,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.sans(size: 10, color: AppColors.textTertiary)),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Row(
+                            children: [
+                              Text('¥${p.price}',
+                                  style: AppTypography.serif(
+                                      size: 14, weight: FontWeight.w600, color: AppColors.inkGreen)),
+                              const Spacer(),
+                              Container(
+                                width: 22,
+                                height: 22,
+                                decoration: const BoxDecoration(
+                                    color: AppColors.inkGreen, shape: BoxShape.circle),
+                                child: const Icon(Icons.add, size: 14, color: AppColors.riceWhite),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

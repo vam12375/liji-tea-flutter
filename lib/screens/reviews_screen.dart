@@ -137,7 +137,21 @@ class _ReviewCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(review.content, style: AppTypography.sans(size: 14, height: 1.6)),
-          if (review.images > 0) ...[
+          if (review.photos.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                for (final photo in review.photos)
+                  Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.xs),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.image),
+                      child: Image.asset(photo, width: 72, height: 72, fit: BoxFit.cover),
+                    ),
+                  ),
+              ],
+            ),
+          ] else if (review.images > 0) ...[
             const SizedBox(height: AppSpacing.sm),
             Row(
               children: [

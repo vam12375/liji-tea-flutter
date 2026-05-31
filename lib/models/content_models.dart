@@ -9,6 +9,7 @@ class Review {
     required this.date,
     this.repurchase = 0,
     this.images = 0,
+    this.photos = const [],
   });
 
   final String author;
@@ -17,6 +18,7 @@ class Review {
   final String date;
   final int repurchase; // 回购次数
   final int images; // attached image count
+  final List<String> photos; // attached photo assets
 }
 
 /// A solar-term page (节气): 清明 / 谷雨 / 白露 / 冬至.

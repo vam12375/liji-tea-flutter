@@ -1,157 +1,223 @@
 import 'package:flutter/material.dart';
 
 import '../data/sample_data.dart';
+import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/primary_button.dart';
-import '../widgets/product_list_tile.dart';
 import '../widgets/soft_card.dart';
+import '../widgets/tea_image.dart';
 import 'product_detail_screen.dart';
 
-/// AI 茶推荐 — a short questionnaire that yields tea recommendations.
-class AiRecommendScreen extends StatefulWidget {
+/// AI 茶推荐 — recommends a tea for the user's current state.
+class AiRecommendScreen extends StatelessWidget {
   const AiRecommendScreen({super.key});
 
-  @override
-  State<AiRecommendScreen> createState() => _AiRecommendScreenState();
-}
+  TeaProduct _byName(String name) =>
+      SampleData.allProducts.firstWhere((p) => p.name == name, orElse: () => SampleData.featured);
 
-class _AiRecommendScreenState extends State<AiRecommendScreen> {
-  final _questions = const [
-    ('你偏好的口感?', ['清淡鲜爽', '醇厚回甘', '香高馥郁', '甘甜柔和']),
-    ('常在什么时候喝茶?', ['清晨提神', '午后小憩', '夜晚静饮', '餐后解腻']),
-    ('你的体质偏向?', ['偏寒怕冷', '易上火', '肠胃敏感', '均衡平和']),
+  static const _states = [
+    (Icons.wb_sunny_outlined, '天气', '晴 22°C'),
+    (Icons.sentiment_satisfied_outlined, '心情', '平静'),
+    (Icons.schedule, '时间', '上午'),
+    (Icons.nightlight_outlined, '睡眠', '良好'),
   ];
-  final List<int> _answers = [-1, -1, -1];
-  bool _done = false;
 
-  bool get _ready => !_answers.contains(-1);
+  static const _more = [
+    ('白毫银针', '安神宁静'),
+    ('陈年普洱熟茶', '暖胃助消化'),
+    ('桂花乌龙', '舒缓放松'),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final hero = _byName('明前龙井');
     return Scaffold(
-      appBar: AppBar(title: Text('AI 茶推荐', style: AppTypography.h3)),
+      backgroundColor: AppColors.riceWhite,
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('AI 茶推荐', style: AppTypography.h3),
+            const SizedBox(width: 4),
+            const Icon(Icons.eco_outlined, color: AppColors.pineGreen, size: 18),
+          ],
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.history, size: 18, color: AppColors.textSecondary),
+            label: Text('我的记录', style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
+          ),
+        ],
+      ),
       body: SafeArea(
         top: false,
-        child: _done ? _result() : _quiz(),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenMargin, AppSpacing.xs, AppSpacing.screenMargin, AppSpacing.xl),
+          children: [
+            Text('为你推荐最适合此刻的茶', style: AppTypography.body),
+            const SizedBox(height: AppSpacing.lg),
+            Text('此刻,适合一杯清润的绿茶', style: AppTypography.h2),
+            const SizedBox(height: AppSpacing.xxs),
+            Text('根据你的状态推荐', style: AppTypography.caption),
+            const SizedBox(height: AppSpacing.md),
+            // featured recommendation
+            SoftCard(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 96,
+                    height: 96,
+                    child: TeaImage(swatch: hero.swatch, radius: AppRadius.image, iconSize: 36),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(hero.name, style: AppTypography.sans(size: 17, weight: FontWeight.w600)),
+                        const SizedBox(height: AppSpacing.xxs),
+                        _Tag(hero.category),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text('鲜爽回甘,清新明朗',
+                            style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
+                        Text('适合此刻的你',
+                            style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
+                        const SizedBox(height: AppSpacing.sm),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => ProductDetailScreen(product: hero))),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('查看详情',
+                                  style: AppTypography.sans(
+                                      size: 13, weight: FontWeight.w600, color: AppColors.inkGreen)),
+                              const Icon(Icons.chevron_right, size: 16, color: AppColors.inkGreen),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // current state
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('你当前的状态', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
+                Text('编辑', style: AppTypography.caption),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SoftCard(
+              child: Row(
+                children: [
+                  for (final s in _states)
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Icon(s.$1, color: AppColors.pineGreen, size: 24),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(s.$2, style: AppTypography.caption),
+                          const SizedBox(height: 2),
+                          Text(s.$3, style: AppTypography.sans(size: 12, weight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text('更多推荐', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < _more.length; i++) ...[
+                  Expanded(child: _MoreCard(product: _byName(_more[i].$1), effect: _more[i].$2)),
+                  if (i != _more.length - 1) const SizedBox(width: AppSpacing.sm),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _quiz() {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenMargin, AppSpacing.md, AppSpacing.screenMargin, AppSpacing.xl),
-            children: [
-              SoftCard(
-                color: AppColors.inkGreen,
-                child: Row(
-                  children: [
-                    const Icon(Icons.auto_awesome, color: AppColors.gold),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text('回答几个小问题,茶博士为你推荐合适的茶',
-                          style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              for (var q = 0; q < _questions.length; q++) ...[
-                Text('${q + 1}. ${_questions[q].$1}',
-                    style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    for (var o = 0; o < _questions[q].$2.length; o++)
-                      GestureDetector(
-                        onTap: () => setState(() => _answers[q] = o),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-                          decoration: BoxDecoration(
-                            color: _answers[q] == o ? AppColors.inkGreen : AppColors.cardSurface,
-                            borderRadius: BorderRadius.circular(AppRadius.chip),
-                            border: Border.all(
-                                color: _answers[q] == o ? AppColors.inkGreen : AppColors.divider),
-                          ),
-                          child: Text(_questions[q].$2[o],
-                              style: AppTypography.sans(
-                                  size: 13,
-                                  color: _answers[q] == o
-                                      ? AppColors.riceWhite
-                                      : AppColors.textSecondary)),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-              ],
-            ],
-          ),
-        ),
-        Container(
-          padding: EdgeInsets.fromLTRB(AppSpacing.screenMargin, AppSpacing.sm,
-              AppSpacing.screenMargin, AppSpacing.sm + MediaQuery.of(context).padding.bottom),
-          child: PrimaryButton(
-            label: '生成专属推荐',
-            expand: true,
-            onPressed: _ready ? () => setState(() => _done = true) : null,
-          ),
-        ),
-      ],
+class _Tag extends StatelessWidget {
+  const _Tag(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.pineGreen.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.chip),
+      ),
+      child: Text(label, style: AppTypography.sans(size: 11, color: AppColors.pineGreen)),
     );
   }
+}
 
-  Widget _result() {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screenMargin, AppSpacing.md, AppSpacing.screenMargin, AppSpacing.xl),
-      children: [
-        SoftCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                const Icon(Icons.auto_awesome, color: AppColors.gold, size: 20),
-                const SizedBox(width: AppSpacing.xs),
-                Text('茶博士的建议', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
-              ]),
-              const SizedBox(height: AppSpacing.sm),
-              Text('根据你的偏好,推荐口感鲜爽、温润养胃的绿茶与白茶。'
-                  '清晨可饮龙井提神,午后以白毫银针静心,皆宜温润冲泡。',
-                  style: AppTypography.sans(size: 14, height: 1.7)),
-            ],
-          ),
+class _MoreCard extends StatelessWidget {
+  const _MoreCard({required this.product, required this.effect});
+  final TeaProduct product;
+  final String effect;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product))),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: AppColors.cardSurface,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: AppColors.divider),
         ),
-        const SizedBox(height: AppSpacing.lg),
-        Text('为你甄选', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
-        for (final p in SampleData.recommended)
-          ProductListTile(
-            product: p,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: TeaImage(swatch: product.swatch, radius: AppRadius.image, iconSize: 28),
             ),
-            onAdd: () {},
-          ),
-        const SizedBox(height: AppSpacing.lg),
-        SecondaryButton(
-          label: '重新测一次',
-          expand: true,
-          onPressed: () => setState(() {
-            _done = false;
-            for (var i = 0; i < _answers.length; i++) {
-              _answers[i] = -1;
-            }
-          }),
+            const SizedBox(height: AppSpacing.xs),
+            Text(product.name,
+                style: AppTypography.sans(size: 13, weight: FontWeight.w600),
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(product.category, style: AppTypography.caption),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(effect,
+                      style: AppTypography.sans(size: 11, color: AppColors.textSecondary),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: const BoxDecoration(color: AppColors.inkGreen, shape: BoxShape.circle),
+                  child: const Icon(Icons.add, color: AppColors.riceWhite, size: 14),
+                ),
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

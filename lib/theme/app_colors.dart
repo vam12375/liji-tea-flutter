@@ -11,7 +11,7 @@ class AppColors {
   static const Color pineGreen = Color(0xFF355B4C); // 松针绿
 
   // Neutral / 中性色
-  static const Color riceWhite = Color(0xFFF7F4EE); // 米白 (background)
+  static const Color riceWhite = Color(0xFFFBF8F3); // 米白 (background)
   static const Color ricePaperGray = Color(0xFFE7E2D9); // 宣纸灰 (surface)
   static const Color charcoalBlack = Color(0xFF1A1A1A); // 炭黑 (text)
 
