@@ -22,10 +22,13 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  late List<_Line> _lines = [
+  late final List<_Line> _lines = [
     for (final c in SampleData.cart)
       _Line(product: c.product, spec: c.spec, quantity: c.quantity, selected: true),
   ];
+  bool _editing = false;
+
+  void _deleteSelected() => setState(() => _lines.removeWhere((l) => l.selected));
 
   int get _total {
     var sum = 0;
@@ -36,8 +39,6 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   bool get _allSelected => _lines.isNotEmpty && _lines.every((l) => l.selected);
-
-  void _clear() => setState(() => _lines = []);
 
   @override
   Widget build(BuildContext context) {
@@ -52,21 +53,13 @@ class _CartScreenState extends State<CartScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('购物车 (${_lines.length})', style: AppTypography.h2),
-                TextButton(onPressed: _clear, child: Text('清空', style: AppTypography.body)),
+                TextButton(
+                    onPressed: () => setState(() => _editing = !_editing),
+                    child: Text(_editing ? '完成' : '编辑', style: AppTypography.body)),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-              child: Text(
-                _total >= 299 ? '已满 ¥299,享免运费' : '满 ¥299 可享免运费,还差 ¥${299 - _total}',
-                style: AppTypography.sans(size: 12, color: AppColors.pineGreen),
-              ),
-            ),
-          ),
+          const SizedBox(height: AppSpacing.xs),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
@@ -91,6 +84,8 @@ class _CartScreenState extends State<CartScreen> {
           _CartBottomBar(
             allSelected: _allSelected,
             total: _total,
+            editing: _editing,
+            onDelete: _deleteSelected,
             onToggleAll: () {
               final next = !_allSelected;
               setState(() {
@@ -150,10 +145,16 @@ class _CartRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           GestureDetector(
             onTap: onTap,
-            child: SizedBox(
-              width: 72,
-              height: 72,
-              child: TeaImage(swatch: line.product.swatch, radius: AppRadius.image, iconSize: 28),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.image),
+              child: line.product.thumbAsset != null
+                  ? Image.asset(line.product.thumbAsset!, width: 72, height: 72, fit: BoxFit.cover)
+                  : SizedBox(
+                      width: 72,
+                      height: 72,
+                      child: TeaImage(
+                          swatch: line.product.swatch, radius: AppRadius.image, iconSize: 28),
+                    ),
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -237,12 +238,16 @@ class _CartBottomBar extends StatelessWidget {
   const _CartBottomBar({
     required this.allSelected,
     required this.total,
+    required this.editing,
+    required this.onDelete,
     required this.onToggleAll,
     required this.onCheckout,
   });
 
   final bool allSelected;
   final int total;
+  final bool editing;
+  final VoidCallback onDelete;
   final VoidCallback onToggleAll;
   final VoidCallback? onCheckout;
 
@@ -261,25 +266,29 @@ class _CartBottomBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.xs),
           Text('全选', style: AppTypography.sans(size: 14)),
           const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text('合计: ', style: AppTypography.caption),
-                  Text('¥$total',
-                      style: AppTypography.serif(
-                          size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
-                ],
-              ),
-              Text('已优惠 ¥30', style: AppTypography.caption),
-            ],
-          ),
-          const SizedBox(width: AppSpacing.md),
-          PrimaryButton(label: '去结算', onPressed: onCheckout),
+          if (editing) ...[
+            SecondaryButton(label: '删除', onPressed: onDelete),
+          ] else ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text('合计: ', style: AppTypography.caption),
+                    Text('¥$total',
+                        style: AppTypography.serif(
+                            size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                  ],
+                ),
+                Text('已优惠 ¥0', style: AppTypography.caption),
+              ],
+            ),
+            const SizedBox(width: AppSpacing.md),
+            PrimaryButton(label: '去结算', onPressed: onCheckout),
+          ],
         ],
       ),
     );

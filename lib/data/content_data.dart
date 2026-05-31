@@ -16,7 +16,11 @@ class ContentData {
       content: '包装很雅致,茶叶很新鲜,豆香明显,口感鲜爽,回甘持久,喜欢!',
       date: '2024.04.12',
       repurchase: 2,
-      images: 3,
+      photos: [
+        'assets/images/review_1.png',
+        'assets/images/review_2.png',
+        'assets/images/review_3.png',
+      ],
     ),
     Review(
       author: '静水流深',

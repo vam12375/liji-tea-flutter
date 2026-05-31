@@ -19,7 +19,7 @@ class SampleData {
     price: 168,
     unit: '50g',
     swatch: Color(0xFFA9B89A),
-    imageAsset: 'assets/images/tea_detail.png',
+    imageAsset: 'assets/images/tea_detail2.png',
     thumbAsset: 'assets/images/tea_thumb.png',
     description: '甄选明前头采芽叶,遵循传统工艺,手工炒制而成。'
         '干茶扁平挺秀,色泽嫩绿光润;汤色嫩绿明亮,香气清雅持久,滋味鲜爽甘醇,回味悠长。',
@@ -41,6 +41,7 @@ class SampleData {
     price: 128,
     unit: '50g',
     swatch: Color(0xFFB3C0A0),
+    thumbAsset: 'assets/images/tea_thumb.png',
     description: '产自洞庭东西山,茶果间作,天然花果香。条索纤细卷曲似螺,白毫显露,'
         '汤色碧绿清澈,滋味鲜醇,回味甘甜。',
     attributes: [
@@ -61,6 +62,7 @@ class SampleData {
     price: 138,
     unit: '50g',
     swatch: Color(0xFFAEBE9C),
+    thumbAsset: 'assets/images/tea_thumb.png',
     description: '安吉白茶属绿茶类,因低温期白化而得名。氨基酸含量高,滋味清甜鲜爽,'
         '汤色嫩绿明亮,叶白脉翠,观之赏心悦目。',
     attributes: [
@@ -81,6 +83,7 @@ class SampleData {
     price: 118,
     unit: '50g',
     swatch: Color(0xFFB6C2A4),
+    thumbAsset: 'assets/images/tea_thumb.png',
     specs: ['50g', '100g', '250g'],
   );
 
@@ -93,6 +96,7 @@ class SampleData {
     price: 98,
     unit: '50g',
     swatch: Color(0xFFA7B595),
+    thumbAsset: 'assets/images/tea_thumb.png',
     specs: ['50g', '100g', '250g'],
   );
 
@@ -258,6 +262,7 @@ class SampleData {
     price: 298,
     unit: '龙井 50g×2 罐',
     swatch: Color(0xFF3C5246),
+    thumbAsset: 'assets/images/gift_box.png',
     specs: ['标准装'],
   );
 
@@ -304,8 +309,8 @@ class SampleData {
 
   static const List<CartItem> cart = [
     CartItem(product: longjing, spec: '50g', quantity: 1),
-    CartItem(product: shanshuiPot, spec: '单壶 (300ml)', quantity: 1),
-    CartItem(product: chunshanGift, spec: '标准装', quantity: 1),
+    CartItem(product: shanshuiPot, spec: '墨绿 · 300ml', quantity: 1),
+    CartItem(product: chunshanGift, spec: '龙井 50g×2 罐 (礼盒装)', quantity: 1),
   ];
 
   /// Search — hot keywords and history.

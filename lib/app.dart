@@ -4,7 +4,7 @@ import 'screens/cart_screen.dart';
 import 'screens/category_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/tea_culture_screen.dart';
+import 'screens/tea_space_screen.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_typography.dart';
 
@@ -31,7 +31,7 @@ class _AppShellState extends State<AppShell> {
   late final List<Widget> _pages = [
     HomeScreen(onSelectTab: (i) => setState(() => _index = i)),
     const CategoryScreen(),
-    const TeaCultureScreen(),
+    const TeaSpaceScreen(),
     const CartScreen(),
     const ProfileScreen(),
   ];

@@ -8,8 +8,8 @@ import '../widgets/section_header.dart';
 import 'brand_story_screen.dart';
 import 'brewing_guide_screen.dart';
 import 'solar_term_screen.dart';
+import 'tea_aesthetics_screen.dart';
 import 'tea_region_screen.dart';
-import 'tea_space_screen.dart';
 
 /// 茶文化 — culture hub linking to aesthetics, solar terms, brewing,
 /// regions and the brand story.
@@ -31,7 +31,7 @@ class TeaCultureScreen extends StatelessWidget {
             title: '茶道美学',
             subtitle: '和敬清寂 · 四重境界',
             onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const TeaSpaceScreen())),
+                MaterialPageRoute(builder: (_) => const TeaAestheticsScreen())),
           ),
           const SizedBox(height: AppSpacing.lg),
           SectionHeader(
@@ -115,9 +115,10 @@ class _Banner extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 150,
+        height: 176,
         width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppRadius.card),
           gradient: const LinearGradient(

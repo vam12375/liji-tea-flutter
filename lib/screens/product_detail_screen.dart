@@ -6,6 +6,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/tea_image.dart';
+import 'reviews_screen.dart';
 
 /// 商品详情 — product detail screen, mirroring the 明前龙井 / 山水茶壶 design.
 class ProductDetailScreen extends StatefulWidget {
@@ -30,6 +31,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       if (a.label == '材质') return a.value;
     }
     return widget.product.category;
+  }
+
+  String? _attr(String label) {
+    for (final a in widget.product.attributes) {
+      if (a.label == label) return a.value;
+    }
+    return null;
+  }
+
+  List<(String, String)> get _params {
+    final product = widget.product;
+    final net = product.specs.isNotEmpty ? product.specs[_selectedSpec] : product.unit;
+    return [
+      ('产地', product.origin),
+      if (_attr('采摘') != null) ('采摘', _attr('采摘')!),
+      ('工艺', _attr('工艺') ?? '传统工艺'),
+      if (_attr('口感') != null) ('口感', _attr('口感')!),
+      ('净含量', net),
+    ];
   }
 
   @override
@@ -77,6 +97,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               const SizedBox(height: AppSpacing.lg),
               if (product.attributes.isNotEmpty) _AttributeRow(attributes: product.attributes),
               const SizedBox(height: AppSpacing.xl),
+              if (product.description != null) ...[
+                Text('产品介绍', style: AppTypography.h3),
+                const SizedBox(height: AppSpacing.md),
+                Text(product.description!,
+                    style: AppTypography.sans(size: 14, height: 1.9, color: AppColors.textSecondary)),
+                const SizedBox(height: AppSpacing.md),
+                _ParamTable(params: _params),
+                const SizedBox(height: AppSpacing.xl),
+              ],
             ],
             Text('选择规格', style: AppTypography.h3),
             const SizedBox(height: AppSpacing.md),
@@ -85,6 +114,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               selected: _selectedSpec,
               onSelected: (i) => setState(() => _selectedSpec = i),
             ),
+            const SizedBox(height: AppSpacing.xl),
+            _ReviewsEntry(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => ReviewsScreen(productName: product.name))),
+            ),
           ],
         ),
       ),
@@ -92,6 +126,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         price: product.price,
         unit: _isWare ? null : (product.specs.isNotEmpty ? product.specs[_selectedSpec] : product.unit),
         onAdd: () => _showAdded(context),
+        onBuy: () => _showAdded(context),
       ),
     );
   }
@@ -225,12 +260,85 @@ class _SpecSelector extends StatelessWidget {
   }
 }
 
+class _ParamTable extends StatelessWidget {
+  const _ParamTable({required this.params});
+
+  final List<(String, String)> params;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (final p in params)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 64,
+                  child: Text(p.$1, style: AppTypography.caption),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(p.$2,
+                      style: AppTypography.sans(size: 14, color: AppColors.charcoalBlack)),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ReviewsEntry extends StatelessWidget {
+  const _ReviewsEntry({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.cardSurface,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Row(
+          children: [
+            Text('商品评价', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
+            const SizedBox(width: AppSpacing.sm),
+            Row(children: [
+              for (var i = 0; i < 5; i++)
+                const Icon(Icons.star, size: 13, color: AppColors.gold),
+            ]),
+            const Spacer(),
+            Text('查看全部 1286 条', style: AppTypography.caption),
+            const Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _BottomBar extends StatelessWidget {
-  const _BottomBar({required this.price, required this.unit, required this.onAdd});
+  const _BottomBar({
+    required this.price,
+    required this.unit,
+    required this.onAdd,
+    required this.onBuy,
+  });
 
   final int price;
   final String? unit;
   final VoidCallback onAdd;
+  final VoidCallback onBuy;
 
   @override
   Widget build(BuildContext context) {
@@ -252,15 +360,17 @@ class _BottomBar extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text('¥$price',
-                  style: AppTypography.serif(size: 28, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                  style: AppTypography.serif(size: 26, weight: FontWeight.w700, color: AppColors.inkGreen)),
               if (unit != null) ...[
                 const SizedBox(width: 4),
                 Text('/ $unit', style: AppTypography.caption),
               ],
             ],
           ),
-          const SizedBox(width: AppSpacing.lg),
-          Expanded(child: PrimaryButton(label: '加入购物车', expand: true, onPressed: onAdd)),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(child: SecondaryButton(label: '加入购物车', expand: true, onPressed: onAdd)),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: PrimaryButton(label: '立即购买', expand: true, onPressed: onBuy)),
         ],
       ),
     );
