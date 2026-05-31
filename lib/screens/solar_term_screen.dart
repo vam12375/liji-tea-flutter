@@ -5,7 +5,6 @@ import '../models/content_models.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
 
 /// 节气 — solar-term editorial pages (清明 / 谷雨 / 白露 / 冬至)
@@ -21,7 +20,7 @@ class SolarTermScreen extends StatefulWidget {
 
 class _SolarTermScreenState extends State<SolarTermScreen> {
   late int _index = widget.initialIndex;
-  int _tab = 0;
+  int _tab = 1;
 
   static const _images = [
     'assets/images/season_qingming.png',
@@ -179,21 +178,8 @@ class _SolarTermScreenState extends State<SolarTermScreen> {
         Text('节气茶推荐', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
         const SizedBox(height: AppSpacing.sm),
         _Recommend(term: term),
-        const SizedBox(height: AppSpacing.md),
-        SoftCard(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.tips_and_updates_outlined, color: AppColors.gold, size: 20),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text('应季而饮,顺时养生。${term.recommendName}的茶性与${term.name}时令相合,'
-                    '入口${term.recommendDesc}。',
-                    style: AppTypography.sans(size: 13, height: 1.8, color: AppColors.textSecondary)),
-              ),
-            ],
-          ),
-        ),
+        const SizedBox(height: AppSpacing.lg),
+        _food(term),
       ],
     );
   }
@@ -390,37 +376,56 @@ class _Recommend extends StatelessWidget {
   Widget build(BuildContext context) {
     return SoftCard(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: AppColors.inkGreen,
+              color: AppColors.ricePaperGray.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(AppRadius.image),
             ),
-            child: const Icon(Icons.local_cafe, color: AppColors.gold),
+            child: const Icon(Icons.local_cafe, color: AppColors.pineGreen, size: 30),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('节气茶推荐', style: AppTypography.caption),
-                const SizedBox(height: 2),
                 Text(term.recommendName, style: AppTypography.sans(size: 16, weight: FontWeight.w600)),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(term.recommendDesc, style: AppTypography.body),
+                const SizedBox(height: AppSpacing.xs),
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  children: [for (final t in term.recommendTags) _Tag(t)],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('¥${term.recommendPrice}',
+                        style: AppTypography.serif(
+                            size: 20, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                    const SizedBox(width: 2),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 3),
+                      child: Text('起', style: AppTypography.caption),
+                    ),
+                    const Spacer(),
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        color: AppColors.inkGreen,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.add, color: AppColors.riceWhite, size: 18),
+                    ),
+                  ],
+                ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('¥${term.recommendPrice}',
-                  style: AppTypography.serif(size: 18, weight: FontWeight.w700, color: AppColors.inkGreen)),
-              const SizedBox(height: AppSpacing.xs),
-              PrimaryButton(label: '查看', onPressed: () {}),
-            ],
           ),
         ],
       ),
