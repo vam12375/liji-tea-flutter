@@ -23,27 +23,46 @@ class OnboardingScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const Spacer(flex: 3),
-            Image.asset('assets/images/logo_mark.png', width: 60, height: 60),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'LIJI·TEA',
-              style: AppTypography.latin(
-                  size: 24, weight: FontWeight.w600, letterSpacing: 4, color: AppColors.inkGreen),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 56),
+                        Image.asset('assets/images/logo_mark.png', width: 60, height: 60),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'LIJI·TEA',
+                          style: AppTypography.latin(
+                              size: 24, weight: FontWeight.w600, letterSpacing: 4, color: AppColors.inkGreen),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        Image.asset('assets/images/splash_couplet.png', width: 104),
+                        const SizedBox(height: 36),
+                        Image.asset('assets/images/splash_mountains.png',
+                            width: double.infinity, fit: BoxFit.fitWidth),
+                        const SizedBox(height: AppSpacing.lg),
+                        const _Dots(count: 3, active: 0),
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            Image.asset('assets/images/splash_couplet.png', width: 104),
-            const Spacer(flex: 3),
-            Image.asset('assets/images/splash_mountains.png',
-                width: double.infinity, fit: BoxFit.fitWidth),
-            const SizedBox(height: AppSpacing.lg),
-            const _Dots(count: 3, active: 0),
-            const SizedBox(height: AppSpacing.xl),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: PrimaryButton(label: '开启茶之旅程', expand: true, onPressed: () => _enter(context)),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.lg),
+                  child: PrimaryButton(
+                      label: '开启茶之旅程', expand: true, onPressed: () => _enter(context)),
+                ),
+              ),
             ),
-            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),
