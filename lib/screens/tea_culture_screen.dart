@@ -18,11 +18,13 @@ class TeaCultureScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenMargin, AppSpacing.sm, AppSpacing.screenMargin, AppSpacing.xl),
-        children: [
+    return Scaffold(
+      backgroundColor: AppColors.riceWhite,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenMargin, AppSpacing.sm, AppSpacing.screenMargin, AppSpacing.xl),
+          children: [
           Text('茶文化', style: AppTypography.h2),
           const SizedBox(height: AppSpacing.xs),
           Text('一盏茶汤,半卷诗书,在茶香中体味东方生活美学。', style: AppTypography.body),
@@ -98,7 +100,8 @@ class TeaCultureScreen extends StatelessWidget {
             onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const BrandStoryScreen())),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
