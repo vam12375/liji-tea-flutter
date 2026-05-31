@@ -4,6 +4,7 @@ import '../models/account_models.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../widgets/app_icon.dart';
 import '../widgets/soft_card.dart';
 import 'address_screen.dart';
 import 'after_sale_screen.dart';
@@ -82,11 +83,11 @@ class ProfileScreen extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_none, color: AppColors.textSecondary),
+              icon: const AppIcon(AppIcon.message, color: AppColors.textSecondary),
               onPressed: () => _push(context, const NotificationScreen()),
             ),
             IconButton(
-              icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
+              icon: const AppIcon(AppIcon.settings, color: AppColors.textSecondary),
               onPressed: () => _push(context, const SettingsScreen()),
             ),
           ],
@@ -175,16 +176,17 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _menuCard(BuildContext context) {
-    final items = <(IconData, String, VoidCallback)>[
-      (Icons.favorite_border, '我的收藏', () => Navigator.of(context).push(
+    const iconColor = AppColors.pineGreen;
+    final items = <(Widget, String, VoidCallback)>[
+      (const AppIcon(AppIcon.favorite, size: 20, color: iconColor), '我的收藏', () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
-      (Icons.confirmation_number_outlined, '我的优惠券', () => Navigator.of(context).push(
+      (const Icon(Icons.confirmation_number_outlined, size: 20, color: iconColor), '我的优惠券', () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const CouponScreen()))),
-      (Icons.location_on_outlined, '收货地址', () => _push(context, const AddressScreen())),
-      (Icons.history_outlined, '浏览足迹', () => _push(context, const FootprintScreen())),
-      (Icons.feedback_outlined, '意见反馈', () => _push(context, const FeedbackScreen())),
-      (Icons.headset_mic_outlined, '联系客服', () => _push(context, const CustomerServiceScreen())),
-      (Icons.settings_outlined, '设置', () => _push(context, const SettingsScreen())),
+      (const AppIcon(AppIcon.location, size: 20, color: iconColor), '收货地址', () => _push(context, const AddressScreen())),
+      (const Icon(Icons.history_outlined, size: 20, color: iconColor), '浏览足迹', () => _push(context, const FootprintScreen())),
+      (const Icon(Icons.feedback_outlined, size: 20, color: iconColor), '意见反馈', () => _push(context, const FeedbackScreen())),
+      (const Icon(Icons.headset_mic_outlined, size: 20, color: iconColor), '联系客服', () => _push(context, const CustomerServiceScreen())),
+      (const AppIcon(AppIcon.settings, size: 20, color: iconColor), '设置', () => _push(context, const SettingsScreen())),
     ];
     return SoftCard(
       padding: EdgeInsets.zero,
@@ -203,7 +205,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(items[i].$1, size: 20, color: AppColors.pineGreen),
+                    items[i].$1,
                     const SizedBox(width: AppSpacing.sm),
                     Text(items[i].$2, style: AppTypography.sans(size: 14)),
                     const Spacer(),

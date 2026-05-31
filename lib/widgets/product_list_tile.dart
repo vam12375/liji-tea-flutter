@@ -4,6 +4,7 @@ import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'app_icon.dart';
 import 'tea_image.dart';
 
 /// A horizontal product row (image · name/tagline · price · cart icon),
@@ -73,7 +74,7 @@ class ProductListTile extends StatelessWidget {
             trailing ??
                 IconButton(
                   onPressed: onAdd,
-                  icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.inkGreen),
+                  icon: const AppIcon(AppIcon.cart, color: AppColors.inkGreen),
                 ),
           ],
         ),

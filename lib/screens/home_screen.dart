@@ -5,6 +5,7 @@ import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../widgets/app_icon.dart';
 import '../widgets/featured_product_card.dart';
 import '../widgets/section_header.dart';
 import 'ai_recommend_screen.dart';
@@ -123,12 +124,12 @@ class _TopBar extends StatelessWidget {
           children: [
             IconButton(
               onPressed: onSearch,
-              icon: const Icon(Icons.search, color: AppColors.charcoalBlack),
+              icon: const AppIcon(AppIcon.search, color: AppColors.charcoalBlack),
             ),
             IconButton(
               onPressed: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
-              icon: const Icon(Icons.notifications_none_rounded, color: AppColors.charcoalBlack),
+              icon: const AppIcon(AppIcon.message, color: AppColors.charcoalBlack),
             ),
           ],
         ),
@@ -155,7 +156,7 @@ class _SearchBar extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, size: 18, color: AppColors.textTertiary),
+            const AppIcon(AppIcon.search, size: 18, color: AppColors.textTertiary),
             const SizedBox(width: AppSpacing.xs),
             Text('搜索茶叶 / 茶具 / 文章',
                 style: AppTypography.sans(size: 14, color: AppColors.textTertiary)),

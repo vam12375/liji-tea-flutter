@@ -4,6 +4,7 @@ import '../data/sample_data.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../widgets/app_icon.dart';
 import '../widgets/cart_snack.dart';
 import '../widgets/product_list_tile.dart';
 import '../widgets/status_view.dart';
@@ -56,7 +57,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p)),
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.favorite, color: AppColors.inkGreen),
+                        icon: const AppIcon(AppIcon.favorite, color: AppColors.inkGreen),
                         onPressed: () => setState(() => _ids.remove(p.id)),
                       ),
                       onAdd: () => showCartSnack(context, p.name),
