@@ -11,6 +11,7 @@ import 'coupon_screen.dart';
 import 'customer_service_screen.dart';
 import 'favorites_screen.dart';
 import 'footprint_screen.dart';
+import 'gift_customize_screen.dart';
 import 'order_list_screen.dart';
 import 'settings_screen.dart';
 
@@ -171,6 +172,7 @@ class ProfileScreen extends StatelessWidget {
     final items = <(IconData, String, VoidCallback)>[
       (Icons.star_border, '收藏夹', () => _push(context, const FavoritesScreen())),
       (Icons.history, '浏览记录', () => _push(context, const FootprintScreen())),
+      (Icons.card_giftcard_outlined, '茶礼定制', () => _push(context, const GiftLandingScreen())),
       (Icons.confirmation_number_outlined, '优惠券', () => _push(context, const CouponScreen())),
       (Icons.location_on_outlined, '收货地址', () => _push(context, const AddressScreen())),
       (Icons.headset_mic_outlined, '帮助与客服', () => _push(context, const CustomerServiceScreen())),
