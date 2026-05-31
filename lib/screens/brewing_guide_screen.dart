@@ -5,98 +5,121 @@ import '../models/content_models.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/segment_control.dart';
 import '../widgets/soft_card.dart';
 
-/// 冲泡指南 — step-by-step brewing guide with parameter presets.
-class BrewingGuideScreen extends StatefulWidget {
+/// 冲泡指南 — product-specific brewing guide (params + step timeline).
+class BrewingGuideScreen extends StatelessWidget {
   const BrewingGuideScreen({super.key});
 
-  @override
-  State<BrewingGuideScreen> createState() => _BrewingGuideScreenState();
-}
-
-class _BrewingGuideScreenState extends State<BrewingGuideScreen> {
-  int _tea = 0;
-
-  static const _teas = ['绿茶', '白茶', '乌龙茶', '红茶'];
   static const _params = [
-    ('80-85℃', '3g', '15s', '玻璃杯 / 盖碗'),
-    ('90℃', '5g', '30s', '盖碗 / 壶'),
-    ('95-100℃', '7g', '20s', '紫砂壶 / 盖碗'),
-    ('90-95℃', '4g', '10s', '盖碗 / 瓷壶'),
+    (Icons.grass_outlined, '投茶量', '3g'),
+    (Icons.thermostat_outlined, '水温', '80-85℃'),
+    (Icons.water_drop_outlined, '水质', '山泉水'),
+    (Icons.coffee_outlined, '冲泡器具', '玻璃杯/盖碗'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final p = _params[_tea];
     return Scaffold(
-      appBar: AppBar(title: Text('冲泡指南', style: AppTypography.h3)),
+      backgroundColor: AppColors.riceWhite,
+      appBar: AppBar(
+        title: Text('冲泡指南', style: AppTypography.h3),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.favorite_border, color: AppColors.charcoalBlack, size: 20),
+            splashRadius: 20,
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.ios_share_outlined, color: AppColors.charcoalBlack, size: 20),
+            splashRadius: 20,
+          ),
+        ],
+      ),
       body: SafeArea(
         top: false,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenMargin, AppSpacing.md, AppSpacing.screenMargin, AppSpacing.xl),
+              AppSpacing.screenMargin, AppSpacing.xs, AppSpacing.screenMargin, AppSpacing.xl),
           children: [
-            SegmentControl(
-              segments: _teas,
-              selected: _tea,
-              onSelected: (i) => setState(() => _tea = i),
+            // product header
+            Row(
+              children: [
+                Text('明前龙井', style: AppTypography.h2),
+                const SizedBox(width: AppSpacing.xs),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.pineGreen.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppRadius.chip),
+                  ),
+                  child: Text('绿茶',
+                      style: AppTypography.sans(size: 11, color: AppColors.pineGreen)),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.lg),
-            SoftCard(
-              child: Row(
-                children: [
-                  _Param(icon: Icons.thermostat_outlined, label: '水温', value: p.$1),
-                  _Param(icon: Icons.scale_outlined, label: '投茶', value: p.$2),
-                  _Param(icon: Icons.timer_outlined, label: '出汤', value: p.$3),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            SoftCard(
-              child: Row(
-                children: [
-                  const Icon(Icons.emoji_food_beverage_outlined, size: 18, color: AppColors.pineGreen),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text('推荐器具', style: AppTypography.sans(size: 13)),
-                  const Spacer(),
-                  Text(p.$4, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text('冲泡步骤', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
+            const SizedBox(height: AppSpacing.xxs),
+            Text('鲜爽回甘 · 豆香清雅', style: AppTypography.body),
             const SizedBox(height: AppSpacing.md),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              child: Image.asset('assets/images/brew_hero.png',
+                  width: double.infinity, height: 180, fit: BoxFit.cover),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // param row
+            SoftCard(
+              child: Row(
+                children: [
+                  for (var i = 0; i < _params.length; i++) ...[
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Icon(_params[i].$1, size: 22, color: AppColors.pineGreen),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(_params[i].$2, style: AppTypography.caption),
+                          const SizedBox(height: 2),
+                          Text(_params[i].$3,
+                              style: AppTypography.sans(size: 13, weight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                    if (i != _params.length - 1)
+                      Container(width: 1, height: 44, color: AppColors.divider),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // steps
             for (var i = 0; i < ContentData.brewSteps.length; i++)
               _StepRow(
                 index: i + 1,
                 step: ContentData.brewSteps[i],
                 isLast: i == ContentData.brewSteps.length - 1,
               ),
+            const SizedBox(height: AppSpacing.sm),
+            // tip
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.ricePaperGray.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(AppRadius.card),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.lightbulb_outline, size: 18, color: AppColors.gold),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text('小贴士:可根据个人口味调整投茶量与浸泡时间。',
+                        style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Param extends StatelessWidget {
-  const _Param({required this.icon, required this.label, required this.value});
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, size: 22, color: AppColors.pineGreen),
-          const SizedBox(height: AppSpacing.xs),
-          Text(value, style: AppTypography.serif(size: 16, weight: FontWeight.w700, color: AppColors.inkGreen)),
-          Text(label, style: AppTypography.caption),
-        ],
       ),
     );
   }
@@ -117,14 +140,13 @@ class _StepRow extends StatelessWidget {
           Column(
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 30,
+                height: 30,
                 decoration: const BoxDecoration(color: AppColors.inkGreen, shape: BoxShape.circle),
-                child: Center(
-                  child: Text('$index',
-                      style: AppTypography.serif(
-                          size: 15, weight: FontWeight.w600, color: AppColors.gold)),
-                ),
+                alignment: Alignment.center,
+                child: Text(index.toString().padLeft(2, '0'),
+                    style: AppTypography.sans(
+                        size: 12, weight: FontWeight.w600, color: AppColors.gold)),
               ),
               if (!isLast) Expanded(child: Container(width: 2, color: AppColors.divider)),
             ],
@@ -133,17 +155,22 @@ class _StepRow extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(bottom: isLast ? 0 : AppSpacing.lg),
-              child: Column(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: [
-                    Icon(step.icon, size: 18, color: AppColors.pineGreen),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(step.title,
-                        style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
-                  ]),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(step.desc, style: AppTypography.body),
+                  Icon(step.icon, size: 26, color: AppColors.pineGreen),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(step.title,
+                            style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(step.desc, style: AppTypography.body),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

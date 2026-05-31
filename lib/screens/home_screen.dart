@@ -7,9 +7,11 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/featured_product_card.dart';
 import '../widgets/section_header.dart';
+import 'ai_recommend_screen.dart';
 import 'brewing_guide_screen.dart';
 import 'notification_screen.dart';
 import 'product_detail_screen.dart';
+import 'search_screen.dart';
 
 /// 首页 — the home screen, mirroring the LIJI·TEA home design.
 class HomeScreen extends StatelessWidget {
@@ -98,11 +100,27 @@ class _TopBar extends StatelessWidget {
           style: AppTypography.latin(
               size: 26, weight: FontWeight.w600, letterSpacing: 3, color: AppColors.inkGreen),
         ),
-        IconButton(
-          onPressed: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
-          icon: const Icon(Icons.notifications_none_rounded, color: AppColors.charcoalBlack),
-          splashRadius: 22,
+        Row(
+          children: [
+            IconButton(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const SearchScreen())),
+              icon: const Icon(Icons.search_rounded, color: AppColors.charcoalBlack),
+              splashRadius: 22,
+            ),
+            IconButton(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const AiRecommendScreen())),
+              icon: const Icon(Icons.auto_awesome_outlined, color: AppColors.charcoalBlack),
+              splashRadius: 22,
+            ),
+            IconButton(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
+              icon: const Icon(Icons.notifications_none_rounded, color: AppColors.charcoalBlack),
+              splashRadius: 22,
+            ),
+          ],
         ),
       ],
     );
