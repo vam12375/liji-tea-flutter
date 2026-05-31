@@ -5,7 +5,6 @@ import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/app_icon.dart';
 import '../widgets/cart_snack.dart';
 import '../widgets/product_list_tile.dart';
 import '../widgets/section_header.dart';
@@ -151,7 +150,7 @@ class _SearchField extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const AppIcon(AppIcon.search, size: 18, color: AppColors.textTertiary),
+          const Icon(Icons.search, size: 18, color: AppColors.textTertiary),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: TextField(

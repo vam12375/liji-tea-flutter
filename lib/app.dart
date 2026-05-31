@@ -7,7 +7,6 @@ import 'screens/profile_screen.dart';
 import 'screens/tea_culture_screen.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_typography.dart';
-import 'widgets/app_icon.dart';
 
 /// Root navigation shell with the 5-tab bottom bar from the design system:
 /// 首页 / 分类 / 茶文化 / 购物车 / 我的.
@@ -25,7 +24,7 @@ class _AppShellState extends State<AppShell> {
     _TabItem('首页', Icons.home_outlined, Icons.home),
     _TabItem('分类', Icons.grid_view_outlined, Icons.grid_view),
     _TabItem('茶文化', Icons.spa_outlined, Icons.spa),
-    _TabItem('购物车', Icons.shopping_cart_outlined, Icons.shopping_cart, asset: AppIcon.cart),
+    _TabItem('购物车', Icons.shopping_cart_outlined, Icons.shopping_cart),
     _TabItem('我的', Icons.person_outline, Icons.person),
   ];
 
@@ -84,9 +83,7 @@ class _NavButton extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          tab.asset != null
-              ? AppIcon(tab.asset!, color: color, size: 24)
-              : Icon(selected ? tab.activeIcon : tab.icon, color: color, size: 24),
+          Icon(selected ? tab.activeIcon : tab.icon, color: color, size: 24),
           const SizedBox(height: 4),
           Text(
             tab.label,
@@ -103,12 +100,9 @@ class _NavButton extends StatelessWidget {
 }
 
 class _TabItem {
-  const _TabItem(this.label, this.icon, this.activeIcon, {this.asset});
+  const _TabItem(this.label, this.icon, this.activeIcon);
 
   final String label;
   final IconData icon;
   final IconData activeIcon;
-
-  /// Optional custom line icon under assets/icons/ (overrides [icon]).
-  final String? asset;
 }

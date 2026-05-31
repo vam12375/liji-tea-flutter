@@ -4,7 +4,6 @@ import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/app_icon.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/tea_image.dart';
 import 'reviews_screen.dart';
@@ -32,10 +31,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         actions: [
           IconButton(
             onPressed: () => setState(() => _favorite = !_favorite),
-            icon: AppIcon(AppIcon.favorite,
+            icon: Icon(_favorite ? Icons.favorite : Icons.favorite_border,
                 color: _favorite ? AppColors.pineGreen : AppColors.charcoalBlack),
           ),
-          IconButton(onPressed: () {}, icon: const AppIcon(AppIcon.share, color: AppColors.charcoalBlack)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.ios_share_outlined)),
         ],
       ),
       body: SafeArea(

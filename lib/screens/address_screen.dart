@@ -5,7 +5,6 @@ import '../models/account_models.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/app_icon.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
 import '../widgets/status_view.dart';
@@ -73,7 +72,7 @@ class _AddressCard extends StatelessWidget {
           children: [
             const Padding(
               padding: EdgeInsets.only(top: 2),
-              child: AppIcon(AppIcon.location, size: 22, color: AppColors.pineGreen),
+              child: Icon(Icons.location_on_outlined, color: AppColors.pineGreen),
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(

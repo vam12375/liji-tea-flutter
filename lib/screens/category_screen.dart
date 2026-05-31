@@ -4,7 +4,6 @@ import '../data/sample_data.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/app_icon.dart';
 import '../widgets/cart_snack.dart';
 import '../widgets/product_list_tile.dart';
 import 'product_detail_screen.dart';
@@ -20,9 +19,6 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   int _selected = 0;
-  int _sort = 0; // 0 综合 · 1 价格升序 · 2 价格降序
-
-  static const _sortLabels = ['综合排序', '价格从低到高', '价格从高到低'];
 
   static const _icons = <IconData>[
     Icons.eco_outlined,
@@ -39,12 +35,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     final category = SampleData.categories[_selected];
-    final products = [...SampleData.productsByCategory(category)];
-    if (_sort == 1) {
-      products.sort((a, b) => a.price.compareTo(b.price));
-    } else if (_sort == 2) {
-      products.sort((a, b) => b.price.compareTo(a.price));
-    }
+    final products = SampleData.productsByCategory(category);
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,20 +47,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('分类', style: AppTypography.h2),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: _openFilterSheet,
-                      icon: AppIcon(AppIcon.filter,
-                          color: _sort == 0 ? AppColors.charcoalBlack : AppColors.inkGreen),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const SearchScreen()),
-                      ),
-                      icon: const AppIcon(AppIcon.search, color: AppColors.charcoalBlack),
-                    ),
-                  ],
+                IconButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SearchScreen()),
+                  ),
+                  icon: const Icon(Icons.search),
                 ),
               ],
             ),
@@ -108,49 +90,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void _openFilterSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.riceWhite,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenMargin, AppSpacing.md, AppSpacing.screenMargin, AppSpacing.xs),
-                child: Row(
-                  children: [
-                    const AppIcon(AppIcon.filter, size: 18, color: AppColors.inkGreen),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text('筛选排序', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-              for (var i = 0; i < _sortLabels.length; i++)
-                ListTile(
-                  title: Text(_sortLabels[i], style: AppTypography.body),
-                  trailing: _sort == i
-                      ? const Icon(Icons.check, size: 18, color: AppColors.inkGreen)
-                      : null,
-                  onTap: () {
-                    setState(() => _sort = i);
-                    Navigator.of(sheetContext).pop();
-                  },
-                ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
-          ),
-        );
-      },
     );
   }
 }

@@ -4,7 +4,6 @@ import '../models/tea_product.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/app_icon.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
 import 'payment_screen.dart';
@@ -29,7 +28,7 @@ class OrderConfirmScreen extends StatelessWidget {
             SoftCard(
               child: Row(
                 children: [
-                  const AppIcon(AppIcon.location, size: 22, color: AppColors.inkGreen),
+                  const Icon(Icons.location_on_outlined, color: AppColors.inkGreen),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
