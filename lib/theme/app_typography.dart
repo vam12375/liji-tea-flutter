@@ -6,9 +6,22 @@ import 'app_colors.dart';
 /// Typography tokens for the 李记·TEA design system.
 ///
 /// 中文字体: 思源宋体 (Noto Serif SC) for headings · HarmonyOS Sans
-/// 替代为 Noto Sans SC for body. 英文: Cormorant Garamond / Inter.
+/// 替代�?Noto Sans SC for body. 英文: Cormorant Garamond / Inter.
+///
+/// 字体加载策略�?
+/// 1. 优先使用本地字体文件（assets/fonts/�?
+/// 2. 如果本地字体不可用，回退�?google_fonts
+/// 3. 最终回退到系统字�?
 class AppTypography {
   AppTypography._();
+
+  // 字体家族名称（与 pubspec.yaml 中的配置对应�?
+  static const String _serifFamily = 'NotoSerifSC';
+  static const String _sansFamily = 'NotoSansSC';
+  static const String _latinFamily = 'CormorantGaramond';
+
+  // 是否使用本地字体（如�?assets/fonts/ 中有字体文件则为 true�?
+  static const bool _useLocalFonts = true; // TODO: 添加字体文件后改�?true
 
   /// Serif display family used for headings and brand moments (思源宋体).
   static TextStyle serif({
@@ -18,6 +31,16 @@ class AppTypography {
     double? height,
     double? letterSpacing,
   }) {
+    if (_useLocalFonts) {
+      return TextStyle(
+        fontFamily: _serifFamily,
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+        height: height,
+        letterSpacing: letterSpacing,
+      );
+    }
     return GoogleFonts.notoSerifSc(
       fontSize: size,
       fontWeight: weight,
@@ -35,6 +58,16 @@ class AppTypography {
     double? height,
     double? letterSpacing,
   }) {
+    if (_useLocalFonts) {
+      return TextStyle(
+        fontFamily: _sansFamily,
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+        height: height,
+        letterSpacing: letterSpacing,
+      );
+    }
     return GoogleFonts.notoSansSc(
       fontSize: size,
       fontWeight: weight,
@@ -51,6 +84,15 @@ class AppTypography {
     Color color = AppColors.textPrimary,
     double? letterSpacing,
   }) {
+    if (_useLocalFonts) {
+      return TextStyle(
+        fontFamily: _latinFamily,
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+        letterSpacing: letterSpacing,
+      );
+    }
     return GoogleFonts.cormorantGaramond(
       fontSize: size,
       fontWeight: weight,
