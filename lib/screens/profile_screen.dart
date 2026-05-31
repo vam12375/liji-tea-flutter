@@ -1,29 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../models/account_models.dart';
+import '../navigation/app_router.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/soft_card.dart';
-import 'address_screen.dart';
-import 'after_sale_screen.dart';
-import 'coupon_screen.dart';
-import 'customer_service_screen.dart';
-import 'favorites_screen.dart';
-import 'feedback_screen.dart';
-import 'footprint_screen.dart';
-import 'notification_screen.dart';
-import 'order_list_screen.dart';
-import 'points_screen.dart';
-import 'settings_screen.dart';
 
 /// 我的 — profile, order shortcuts, and a menu list.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  void _push(BuildContext context, Widget screen) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +33,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _header(BuildContext context) {
+    final appState = AppStateScope.of(context);
     return Row(
       children: [
         Container(
@@ -62,32 +51,38 @@ class ProfileScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Text('林小茶', style: AppTypography.h3),
+                Text(appState.isLoggedIn ? '林小茶' : '未登录', style: AppTypography.h3),
                 const SizedBox(width: AppSpacing.xs),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.gold.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(AppRadius.chip),
+                if (appState.isLoggedIn)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(AppRadius.chip),
+                    ),
+                    child: Text('VIP 3',
+                        style: AppTypography.sans(size: 11, weight: FontWeight.w600, color: AppColors.gold)),
                   ),
-                  child: Text('VIP 3',
-                      style: AppTypography.sans(size: 11, weight: FontWeight.w600, color: AppColors.gold)),
-                ),
               ]),
               const SizedBox(height: AppSpacing.xxs),
-              Text('茶龄 365 天 · 一杯清茶,半日闲', style: AppTypography.caption),
+              Text(
+                appState.isLoggedIn ? '茶龄 365 天 · ${appState.phone}' : '登录后同步收藏、订单与优惠券',
+                style: AppTypography.caption,
+              ),
             ],
           ),
         ),
         Row(
           children: [
             IconButton(
+              tooltip: '消息通知',
               icon: const Icon(Icons.notifications_none, color: AppColors.textSecondary),
-              onPressed: () => _push(context, const NotificationScreen()),
+              onPressed: () => context.pushNamed(AppRoutes.notifications),
             ),
             IconButton(
+              tooltip: '设置',
               icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
-              onPressed: () => _push(context, const SettingsScreen()),
+              onPressed: () => context.pushNamed(AppRoutes.settings),
             ),
           ],
         ),
@@ -96,11 +91,12 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _statsRow(BuildContext context) {
+    final appState = AppStateScope.of(context);
     final items = <(String, String, VoidCallback)>[
-      ('128', '积分', () => _push(context, const PointsScreen())),
-      ('5', '优惠券', () => _push(context, const CouponScreen())),
-      ('12', '收藏', () => _push(context, const FavoritesScreen())),
-      ('3', '足迹', () => _push(context, const FootprintScreen())),
+      ('128', '积分', () => context.pushNamed(AppRoutes.points)),
+      ('5', '优惠券', () => context.pushNamed(AppRoutes.coupons)),
+      ('${appState.favoriteIds.length}', '收藏', () => context.pushNamed(AppRoutes.favorites)),
+      ('3', '足迹', () => context.pushNamed(AppRoutes.footprint)),
     ];
     return SoftCard(
       child: Row(
@@ -126,14 +122,14 @@ class ProfileScreen extends StatelessWidget {
   Widget _orderCard(BuildContext context) {
     final orders = <(IconData, String, VoidCallback)>[
       (Icons.account_balance_wallet_outlined, '待付款',
-          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingPay))),
+          () => _openOrders(context, OrderStatus.pendingPay)),
       (Icons.inventory_2_outlined, '待发货',
-          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingShip))),
+          () => _openOrders(context, OrderStatus.pendingShip)),
       (Icons.local_shipping_outlined, '待收货',
-          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingReceive))),
+          () => _openOrders(context, OrderStatus.pendingReceive)),
       (Icons.rate_review_outlined, '待评价',
-          () => _push(context, const OrderListScreen(initialStatus: OrderStatus.pendingReview))),
-      (Icons.support_agent_outlined, '退款/售后', () => _push(context, const AfterSaleScreen())),
+          () => _openOrders(context, OrderStatus.pendingReview)),
+      (Icons.support_agent_outlined, '退款/售后', () => context.pushNamed(AppRoutes.afterSale)),
     ];
     return SoftCard(
       child: Column(
@@ -143,7 +139,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Text('我的订单', style: AppTypography.sans(size: 15, weight: FontWeight.w600)),
               GestureDetector(
-                onTap: () => _push(context, const OrderListScreen()),
+                onTap: () => context.pushNamed(AppRoutes.orders),
                 child: Row(children: [
                   Text('全部订单', style: AppTypography.caption),
                   const Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
@@ -176,15 +172,13 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _menuCard(BuildContext context) {
     final items = <(IconData, String, VoidCallback)>[
-      (Icons.favorite_border, '我的收藏', () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
-      (Icons.confirmation_number_outlined, '我的优惠券', () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const CouponScreen()))),
-      (Icons.location_on_outlined, '收货地址', () => _push(context, const AddressScreen())),
-      (Icons.history_outlined, '浏览足迹', () => _push(context, const FootprintScreen())),
-      (Icons.feedback_outlined, '意见反馈', () => _push(context, const FeedbackScreen())),
-      (Icons.headset_mic_outlined, '联系客服', () => _push(context, const CustomerServiceScreen())),
-      (Icons.settings_outlined, '设置', () => _push(context, const SettingsScreen())),
+      (Icons.favorite_border, '我的收藏', () => context.pushNamed(AppRoutes.favorites)),
+      (Icons.confirmation_number_outlined, '我的优惠券', () => context.pushNamed(AppRoutes.coupons)),
+      (Icons.location_on_outlined, '收货地址', () => context.pushNamed(AppRoutes.address)),
+      (Icons.history_outlined, '浏览足迹', () => context.pushNamed(AppRoutes.footprint)),
+      (Icons.feedback_outlined, '意见反馈', () => context.pushNamed(AppRoutes.feedback)),
+      (Icons.headset_mic_outlined, '联系客服', () => context.pushNamed(AppRoutes.service)),
+      (Icons.settings_outlined, '设置', () => context.pushNamed(AppRoutes.settings)),
     ];
     return SoftCard(
       padding: EdgeInsets.zero,
@@ -214,6 +208,13 @@ class ProfileScreen extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  void _openOrders(BuildContext context, OrderStatus status) {
+    context.pushNamed(
+      AppRoutes.orders,
+      queryParameters: {'status': status.name},
     );
   }
 }

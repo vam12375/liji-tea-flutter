@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../navigation/app_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
-import 'logistics_screen.dart';
 
 /// 支付成功 — payment success confirmation.
 class PaymentSuccessScreen extends StatelessWidget {
@@ -18,7 +19,7 @@ class PaymentSuccessScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(automaticallyImplyLeading: false, actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+          onPressed: () => context.goNamed(AppRoutes.home),
           child: Text('完成', style: AppTypography.sans(size: 15, color: AppColors.inkGreen)),
         ),
       ]),
@@ -61,8 +62,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                   const Divider(height: AppSpacing.lg),
                   _action(context, Icons.receipt_long_outlined, '查看订单', () {}),
                   _action(context, Icons.local_shipping_outlined, '物流跟踪', () {
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const LogisticsScreen()));
+                    context.pushNamed(AppRoutes.logistics);
                   }),
                   _action(context, Icons.headset_mic_outlined, '联系客服', () {}),
                 ],
@@ -72,13 +72,13 @@ class PaymentSuccessScreen extends StatelessWidget {
             PrimaryButton(
               label: '继续选购',
               expand: true,
-              onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+              onPressed: () => context.goNamed(AppRoutes.category),
             ),
             const SizedBox(height: AppSpacing.sm),
             SecondaryButton(
               label: '回到首页',
               expand: true,
-              onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+              onPressed: () => context.goNamed(AppRoutes.home),
             ),
           ],
         ),

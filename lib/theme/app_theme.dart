@@ -37,4 +37,35 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get dark {
+    final base = ThemeData.dark(useMaterial3: true);
+    return base.copyWith(
+      scaffoldBackgroundColor: AppColors.inkBlack,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.gold,
+        secondary: AppColors.riceGray,
+        tertiary: AppColors.pineGreen,
+        surface: Color(0xFF151918),
+        onPrimary: AppColors.inkBlack,
+        onSurface: AppColors.riceWhite,
+      ),
+      dividerColor: const Color(0xFF2A302D),
+      textTheme: base.textTheme.copyWith(
+        displayLarge: AppTypography.h1.copyWith(color: AppColors.riceWhite),
+        headlineSmall: AppTypography.h2.copyWith(color: AppColors.riceWhite),
+        titleLarge: AppTypography.h3.copyWith(color: AppColors.riceWhite),
+        bodyLarge: AppTypography.bodyLarge.copyWith(color: AppColors.riceWhite),
+        bodyMedium: AppTypography.body.copyWith(color: AppColors.riceGray),
+        labelSmall: AppTypography.caption.copyWith(color: AppColors.riceGray),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.inkBlack,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        foregroundColor: AppColors.riceWhite,
+        centerTitle: false,
+      ),
+    );
+  }
 }

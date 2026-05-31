@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../navigation/app_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
-import 'payment_success_screen.dart';
 
 /// 支付方式 — payment method selection.
 class PaymentScreen extends StatefulWidget {
@@ -116,8 +117,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
         child: PrimaryButton(
           label: '确认支付 ¥${widget.total}',
           expand: true,
-          onPressed: () => Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => PaymentSuccessScreen(total: widget.total)),
+          onPressed: () => context.goNamed(
+            AppRoutes.paymentSuccess,
+            pathParameters: {'total': '${widget.total}'},
           ),
         ),
       ),

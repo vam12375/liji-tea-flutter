@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import 'screens/cart_screen.dart';
-import 'screens/category_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/tea_culture_screen.dart';
+import 'navigation/app_router.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_typography.dart';
 
 /// Root navigation shell with the 5-tab bottom bar from the design system:
 /// 首页 / 分类 / 茶文化 / 购物车 / 我的.
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({super.key, required this.child});
+
+  final Widget child;
 
   @override
   State<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends State<AppShell> {
-  int _index = 0;
-
   static const _tabs = <_TabItem>[
     _TabItem('首页', Icons.home_outlined, Icons.home),
     _TabItem('分类', Icons.grid_view_outlined, Icons.grid_view),
@@ -28,18 +25,11 @@ class _AppShellState extends State<AppShell> {
     _TabItem('我的', Icons.person_outline, Icons.person),
   ];
 
-  late final List<Widget> _pages = [
-    HomeScreen(onSelectTab: (i) => setState(() => _index = i)),
-    const CategoryScreen(),
-    const TeaCultureScreen(),
-    const CartScreen(),
-    const ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final currentIndex = _indexForLocation(GoRouterState.of(context).matchedLocation);
     return Scaffold(
-      body: IndexedStack(index: _index, children: _pages),
+      body: widget.child,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppColors.riceWhite,
@@ -55,8 +45,8 @@ class _AppShellState extends State<AppShell> {
                   Expanded(
                     child: _NavButton(
                       tab: _tabs[i],
-                      selected: _index == i,
-                      onTap: () => setState(() => _index = i),
+                      selected: currentIndex == i,
+                      onTap: () => _goTab(context, i),
                     ),
                   ),
               ],
@@ -65,6 +55,29 @@ class _AppShellState extends State<AppShell> {
         ),
       ),
     );
+  }
+
+  int _indexForLocation(String location) {
+    if (location.startsWith('/category')) return 1;
+    if (location.startsWith('/culture')) return 2;
+    if (location.startsWith('/cart')) return 3;
+    if (location.startsWith('/profile')) return 4;
+    return 0;
+  }
+
+  void _goTab(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        context.goNamed(AppRoutes.home);
+      case 1:
+        context.goNamed(AppRoutes.category);
+      case 2:
+        context.goNamed(AppRoutes.culture);
+      case 3:
+        context.goNamed(AppRoutes.cart);
+      case 4:
+        context.goNamed(AppRoutes.profile);
+    }
   }
 }
 

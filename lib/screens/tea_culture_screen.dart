@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/content_data.dart';
+import '../navigation/app_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/section_header.dart';
-import 'brand_story_screen.dart';
-import 'brewing_guide_screen.dart';
-import 'solar_term_screen.dart';
-import 'tea_region_screen.dart';
-import 'tea_space_screen.dart';
 
 /// 茶文化 — culture hub linking to aesthetics, solar terms, brewing,
 /// regions and the brand story.
@@ -30,15 +27,13 @@ class TeaCultureScreen extends StatelessWidget {
           _Banner(
             title: '茶道美学',
             subtitle: '和敬清寂 · 四重境界',
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const TeaSpaceScreen())),
+            onTap: () => context.pushNamed(AppRoutes.teaSpace),
           ),
           const SizedBox(height: AppSpacing.lg),
           SectionHeader(
             title: '二十四节气',
             actionLabel: '全部',
-            onAction: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SolarTermScreen())),
+            onAction: () => context.pushNamed(AppRoutes.solarTerms),
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
@@ -48,8 +43,10 @@ class TeaCultureScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
                     child: GestureDetector(
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => SolarTermScreen(initialIndex: i))),
+                      onTap: () => context.pushNamed(
+                        AppRoutes.solarTerms,
+                        queryParameters: {'index': '$i'},
+                      ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                         decoration: BoxDecoration(
@@ -81,22 +78,19 @@ class TeaCultureScreen extends StatelessWidget {
             icon: Icons.water_drop_outlined,
             title: '冲泡指南',
             subtitle: '不同茶类的水温 · 投茶 · 时间',
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const BrewingGuideScreen())),
+            onTap: () => context.pushNamed(AppRoutes.brewing),
           ),
           _EntryTile(
             icon: Icons.terrain_outlined,
             title: '茶叶产区',
             subtitle: '循着山川,探寻茶香源头',
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const TeaRegionScreen())),
+            onTap: () => context.pushNamed(AppRoutes.teaRegion),
           ),
           _EntryTile(
             icon: Icons.menu_book_outlined,
             title: '品牌故事',
             subtitle: '李记·TEA 的一脉茶香',
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const BrandStoryScreen())),
+            onTap: () => context.pushNamed(AppRoutes.brandStory),
           ),
         ],
       ),

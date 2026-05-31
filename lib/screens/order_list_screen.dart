@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/account_data.dart';
 import '../models/account_models.dart';
 import '../models/tea_product.dart';
+import '../navigation/app_router.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -10,9 +13,6 @@ import '../widgets/segment_control.dart';
 import '../widgets/soft_card.dart';
 import '../widgets/status_view.dart';
 import '../widgets/tea_image.dart';
-import 'logistics_screen.dart';
-import 'payment_screen.dart';
-import 'reviews_screen.dart';
 
 /// 我的订单 — order list with status tabs.
 class OrderListScreen extends StatefulWidget {
@@ -142,23 +142,32 @@ class _OrderCard extends StatelessWidget {
         add('取消订单', primary: false, onTap: () => _toast(context, '订单已取消'));
         add('去付款',
             primary: true,
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => PaymentScreen(total: order.total))));
+            onTap: () => context.pushNamed(
+              AppRoutes.payment,
+              pathParameters: {'total': '${order.total}'},
+            ));
       case OrderStatus.pendingShip:
         add('提醒发货', primary: false, onTap: () => _toast(context, '已提醒商家尽快发货'));
       case OrderStatus.pendingReceive:
         add('查看物流',
             primary: false,
-            onTap: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const LogisticsScreen())));
+            onTap: () => context.pushNamed(AppRoutes.logistics));
         add('确认收货', primary: true, onTap: () => _toast(context, '已确认收货,感谢您的购买'));
       case OrderStatus.pendingReview:
         add('去评价',
             primary: true,
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => ReviewsScreen(productName: order.items.first.product.name))));
+            onTap: () => context.pushNamed(
+              AppRoutes.reviews,
+              pathParameters: {'productName': order.items.first.product.name},
+            ));
       case OrderStatus.completed:
-        add('再次购买', primary: false, onTap: () => _toast(context, '已为你加入购物车'));
+        add('再次购买', primary: false, onTap: () {
+          final appState = AppStateScope.of(context);
+          for (final item in order.items) {
+            appState.addToCart(item.product, item.spec, quantity: item.quantity);
+          }
+          _toast(context, '已为你加入购物车');
+        });
     }
     if (buttons.isNotEmpty) buttons.removeLast(); // trailing spacer
     return buttons;

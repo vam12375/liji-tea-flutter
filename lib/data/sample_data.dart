@@ -278,6 +278,13 @@ class SampleData {
   static List<TeaProduct> productsByCategory(String category) =>
       allProducts.where((p) => p.category == category).toList();
 
+  static TeaProduct? productById(String id) {
+    for (final product in allProducts) {
+      if (product.id == id) return product;
+    }
+    return null;
+  }
+
   /// Quick entries under the greeting.
   static const List<QuickEntry> quickEntries = [
     QuickEntry(label: '精选茶品', icon: Icons.local_cafe_outlined),

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../data/sample_data.dart';
+import '../navigation/app_router.dart';
+import '../repositories/product_repository.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/cart_snack.dart';
+import '../widgets/async_value_view.dart';
 import '../widgets/product_list_tile.dart';
-import 'product_detail_screen.dart';
-import 'search_screen.dart';
 
 /// 分类 — left category rail + product list.
 class CategoryScreen extends StatefulWidget {
@@ -18,6 +19,8 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
+  static const _repository = ProductRepository();
+
   int _selected = 0;
 
   static const _icons = <IconData>[
@@ -34,8 +37,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final category = SampleData.categories[_selected];
-    final products = SampleData.productsByCategory(category);
+    final appState = AppStateScope.of(context);
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,49 +50,79 @@ class _CategoryScreenState extends State<CategoryScreen> {
               children: [
                 Text('分类', style: AppTypography.h2),
                 IconButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SearchScreen()),
-                  ),
+                  tooltip: '搜索',
+                  onPressed: () => context.pushNamed(AppRoutes.search),
                   icon: const Icon(Icons.search),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _CategoryRail(
-                  categories: SampleData.categories,
-                  icons: _icons,
-                  selected: _selected,
-                  onSelected: (i) => setState(() => _selected = i),
-                ),
-                Expanded(
-                  child: products.isEmpty
-                      ? Center(child: Text('敬请期待', style: AppTypography.body))
-                      : ListView(
-                          padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.md, 0, AppSpacing.md, AppSpacing.xl),
-                          children: [
-                            for (final p in products)
-                              ProductListTile(
-                                product: p,
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (_) => ProductDetailScreen(product: p)),
+            child: AsyncValueView(
+              future: _repository.categories(),
+              builder: (context, categories) {
+                final selected = _selected.clamp(0, categories.length - 1);
+                final category = categories[selected];
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _CategoryRail(
+                      categories: categories,
+                      icons: _icons,
+                      selected: selected,
+                      onSelected: (i) => setState(() => _selected = i),
+                    ),
+                    Expanded(
+                      child: AsyncValueView(
+                        future: _repository.productsByCategory(category),
+                        isEmpty: (products) => products.isEmpty,
+                        empty: Center(child: Text('敬请期待', style: AppTypography.body)),
+                        builder: (context, products) {
+                          return ListView(
+                            padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.md, 0, AppSpacing.md, AppSpacing.xl),
+                            children: [
+                              for (final p in products)
+                                ProductListTile(
+                                  product: p,
+                                  onTap: () => context.pushNamed(
+                                    AppRoutes.product,
+                                    pathParameters: {'id': p.id},
+                                    extra: p,
+                                  ),
+                                  onAdd: () {
+                                    appState.addToCart(
+                                      p,
+                                      p.specs.isNotEmpty ? p.specs.first : p.unit,
+                                    );
+                                    _toast(context, '已将「${p.name}」加入购物车');
+                                  },
                                 ),
-                                onAdd: () => showCartSnack(context, p.name),
-                              ),
-                          ],
-                        ),
-                ),
-              ],
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _toast(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message, style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
+          backgroundColor: AppColors.inkGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 }
 

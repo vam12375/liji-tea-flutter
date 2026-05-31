@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/account_data.dart';
 import '../models/account_models.dart';
+import '../navigation/app_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
 import '../widgets/status_view.dart';
-import 'address_edit_screen.dart';
 
 /// 收货地址 — address list with edit / add entries.
 class AddressScreen extends StatelessWidget {
@@ -49,8 +50,7 @@ class AddressScreen extends StatelessWidget {
         child: PrimaryButton(
           label: '新增收货地址',
           expand: true,
-          onPressed: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const AddressEditScreen())),
+          onPressed: () => context.pushNamed(AppRoutes.addressEdit),
         ),
       ),
     );
@@ -102,9 +102,9 @@ class _AddressCard extends StatelessWidget {
               ),
             ),
             IconButton(
+              tooltip: '编辑地址',
               icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.textTertiary),
-              onPressed: () => Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => AddressEditScreen(address: address))),
+              onPressed: () => context.pushNamed(AppRoutes.addressEdit, extra: address),
             ),
           ],
         ),

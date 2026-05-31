@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../models/tea_product.dart';
+import '../navigation/app_router.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/tea_image.dart';
-import 'reviews_screen.dart';
 
 /// 商品详情 — product detail screen, mirroring the 明前龙井 / 山水茶壶 design.
 class ProductDetailScreen extends StatefulWidget {
@@ -20,21 +22,27 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _selectedSpec = 0;
-  bool _favorite = false;
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final appState = AppStateScope.of(context);
+    final favorite = appState.isFavorite(product.id);
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
         actions: [
           IconButton(
-            onPressed: () => setState(() => _favorite = !_favorite),
-            icon: Icon(_favorite ? Icons.favorite : Icons.favorite_border,
-                color: _favorite ? AppColors.pineGreen : AppColors.charcoalBlack),
+            tooltip: favorite ? '取消收藏' : '收藏',
+            onPressed: () => appState.toggleFavorite(product.id),
+            icon: Icon(favorite ? Icons.favorite : Icons.favorite_border,
+                color: favorite ? AppColors.pineGreen : AppColors.charcoalBlack),
           ),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.ios_share_outlined)),
+          IconButton(
+            tooltip: '分享',
+            onPressed: () => _toast(context, '分享功能即将接入系统分享面板'),
+            icon: const Icon(Icons.ios_share_outlined),
+          ),
         ],
       ),
       body: SafeArea(
@@ -80,10 +88,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             InkWell(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ReviewsScreen(productName: product.name),
-                ),
+              onTap: () => context.pushNamed(
+                AppRoutes.reviews,
+                pathParameters: {'productName': product.name},
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -117,12 +124,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _showAdded(BuildContext context) {
     final product = widget.product;
     final spec = product.specs.isNotEmpty ? product.specs[_selectedSpec] : product.unit;
+    AppStateScope.of(context).addToCart(product, spec);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Text('已将「${product.name}」($spec) 加入购物车',
               style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
+          backgroundColor: AppColors.inkGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  void _toast(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message, style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
           backgroundColor: AppColors.inkGreen,
           behavior: SnackBarBehavior.floating,
         ),

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/account_data.dart';
 import '../models/tea_product.dart';
+import '../navigation/app_router.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/cart_snack.dart';
 import '../widgets/product_list_tile.dart';
 import '../widgets/status_view.dart';
-import 'product_detail_screen.dart';
 
 /// 浏览足迹 — recently viewed products grouped by time.
 class FootprintScreen extends StatefulWidget {
@@ -48,7 +49,7 @@ class _FootprintScreenState extends State<FootprintScreen> {
                   title: '暂无浏览记录',
                   subtitle: '看过的好茶都会留在这里',
                   actionLabel: '去逛逛',
-                  onAction: () => Navigator.of(context).pop(),
+                  onAction: () => context.goNamed(AppRoutes.category),
                 ),
               )
             : ListView(
@@ -79,9 +80,24 @@ class _FootprintScreenState extends State<FootprintScreen> {
   Widget _tile(TeaProduct p) {
     return ProductListTile(
       product: p,
-      onTap: () => Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p))),
-      onAdd: () => showCartSnack(context, p.name),
+      onTap: () => context.pushNamed(
+        AppRoutes.product,
+        pathParameters: {'id': p.id},
+        extra: p,
+      ),
+      onAdd: () {
+        AppStateScope.of(context).addToCart(p, p.specs.isNotEmpty ? p.specs.first : p.unit);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('已将「${p.name}」加入购物车',
+                  style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
+              backgroundColor: AppColors.inkGreen,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      },
     );
   }
 }

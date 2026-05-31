@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/sample_data.dart';
 import '../models/tea_product.dart';
+import '../navigation/app_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../state/app_state.dart';
 import '../widgets/featured_product_card.dart';
 import '../widgets/section_header.dart';
-import 'ai_recommend_screen.dart';
-import 'brewing_guide_screen.dart';
-import 'gift_customize_screen.dart';
-import 'notification_screen.dart';
-import 'product_detail_screen.dart';
-import 'search_screen.dart';
-import 'solar_term_screen.dart';
 
 /// 首页 — the home screen, mirroring the LIJI·TEA home design.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, this.onSelectTab});
-
-  /// Switches the bottom-nav tab (e.g. jump to 分类) from the shell.
-  final ValueChanged<int>? onSelectTab;
+  const HomeScreen({super.key});
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -31,8 +24,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _openDetail(BuildContext context, TeaProduct product) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product)),
+    context.pushNamed(
+      AppRoutes.product,
+      pathParameters: {'id': product.id},
+      extra: product,
     );
   }
 
@@ -48,36 +43,29 @@ class HomeScreen extends StatelessWidget {
         ),
         children: [
           _TopBar(
-            onSearch: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SearchScreen())),
+            onSearch: () => context.pushNamed(AppRoutes.search),
           ),
           const SizedBox(height: AppSpacing.lg),
           _GreetingBlock(greeting: _greeting()),
           const SizedBox(height: AppSpacing.lg),
           _SearchBar(
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SearchScreen())),
+            onTap: () => context.pushNamed(AppRoutes.search),
           ),
           const SizedBox(height: AppSpacing.lg),
           _QuickEntries(
-            onSelectTab: onSelectTab,
-            onBrewing: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const BrewingGuideScreen())),
+            onBrewing: () => context.pushNamed(AppRoutes.brewing),
           ),
           const SizedBox(height: AppSpacing.xl),
           _FeatureRow(
-            onAi: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AiRecommendScreen())),
-            onGift: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const GiftCustomizeScreen())),
-            onSolar: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SolarTermScreen())),
+            onAi: () => context.pushNamed(AppRoutes.aiRecommend),
+            onGift: () => context.pushNamed(AppRoutes.giftCustomize),
+            onSolar: () => context.pushNamed(AppRoutes.solarTerms),
           ),
           const SizedBox(height: AppSpacing.xl),
           SectionHeader(
             title: '今日推荐',
             actionLabel: '更多',
-            onAction: () => onSelectTab?.call(1),
+            onAction: () => context.goNamed(AppRoutes.category),
           ),
           const SizedBox(height: AppSpacing.md),
           FeaturedProductCard(
@@ -93,6 +81,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showAdded(BuildContext context, TeaProduct product) {
+    AppStateScope.of(context).addToCart(
+      product,
+      product.specs.isNotEmpty ? product.specs.first : product.unit,
+    );
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -123,11 +115,12 @@ class _TopBar extends StatelessWidget {
           children: [
             IconButton(
               onPressed: onSearch,
+              tooltip: '搜索',
               icon: const Icon(Icons.search, color: AppColors.charcoalBlack),
             ),
             IconButton(
-              onPressed: () => Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => const NotificationScreen())),
+              onPressed: () => context.pushNamed(AppRoutes.notifications),
+              tooltip: '消息通知',
               icon: const Icon(Icons.notifications_none_rounded, color: AppColors.charcoalBlack),
             ),
           ],
@@ -241,19 +234,18 @@ class _GreetingBlock extends StatelessWidget {
 
 
 class _QuickEntries extends StatelessWidget {
-  const _QuickEntries({this.onSelectTab, required this.onBrewing});
+  const _QuickEntries({required this.onBrewing});
 
-  final ValueChanged<int>? onSelectTab;
   final VoidCallback onBrewing;
 
   @override
   Widget build(BuildContext context) {
     final entries = SampleData.quickEntries;
     final actions = <VoidCallback>[
-      () => onSelectTab?.call(1), // 精选茶品 → 分类
-      () => onSelectTab?.call(1), // 茶具器物 → 分类
+      () => context.goNamed(AppRoutes.category), // 精选茶品 → 分类
+      () => context.goNamed(AppRoutes.category), // 茶具器物 → 分类
       onBrewing, // 茶艺课程 → 冲泡指南
-      () => onSelectTab?.call(2), // 茶生活 → 茶文化
+      () => context.goNamed(AppRoutes.culture), // 茶生活 → 茶文化
     ];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

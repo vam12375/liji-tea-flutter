@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../data/sample_data.dart';
 import '../models/tea_product.dart';
+import '../navigation/app_router.dart';
+import '../repositories/product_repository.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/cart_snack.dart';
+import '../widgets/async_value_view.dart';
 import '../widgets/product_list_tile.dart';
 import '../widgets/section_header.dart';
-import 'product_detail_screen.dart';
 
 /// 搜索 — hot keywords, history, trending, and a no-result state.
 class SearchScreen extends StatefulWidget {
@@ -19,8 +21,10 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  static const _repository = ProductRepository();
+
   final _controller = TextEditingController();
-  String? _submitted; // null = not searched yet
+  String? _submitted;
 
   static const _trending = [
     ('明前龙井', '12867'),
@@ -36,20 +40,16 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
-  List<TeaProduct> get _results {
-    final q = _submitted!;
-    return SampleData.allProducts
-        .where((p) => p.name.contains(q) || p.category.contains(q) || p.tagline.contains(q))
-        .toList();
-  }
-
   void _search(String q) {
-    if (q.trim().isEmpty) return;
-    setState(() => _submitted = q.trim());
+    final keyword = q.trim();
+    if (keyword.isEmpty) return;
+    AppStateScope.of(context).addSearchHistory(keyword);
+    setState(() => _submitted = keyword);
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = AppStateScope.of(context);
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
@@ -67,32 +67,97 @@ class _SearchScreenState extends State<SearchScreen> {
       body: SafeArea(
         top: false,
         child: _submitted == null
-            ? _DiscoverView(onTapKeyword: (k) {
-                _controller.text = k;
-                _search(k);
-              }, trending: _trending)
-            : (_results.isEmpty ? _noResult() : _resultList()),
+            ? AsyncValueView(
+                future: _repository.hotSearches(),
+                builder: (context, hotSearches) {
+                  return _DiscoverView(
+                    hotSearches: hotSearches,
+                    history: appState.searchHistory,
+                    trending: _trending,
+                    onTapKeyword: (keyword) {
+                      _controller.text = keyword;
+                      _search(keyword);
+                    },
+                    onClearHistory: appState.clearSearchHistory,
+                  );
+                },
+              )
+            : AsyncValueView(
+                future: _repository.search(_submitted!),
+                isEmpty: (items) => items.isEmpty,
+                empty: _NoResultView(
+                  onSearch: (keyword) {
+                    _controller.text = keyword;
+                    _search(keyword);
+                  },
+                ),
+                builder: (context, results) => _ResultList(
+                  products: results,
+                  onOpen: (product) => context.pushNamed(
+                    AppRoutes.product,
+                    pathParameters: {'id': product.id},
+                    extra: product,
+                  ),
+                  onAdd: (product) {
+                    appState.addToCart(
+                      product,
+                      product.specs.isNotEmpty ? product.specs.first : product.unit,
+                    );
+                    _toast(context, '已将「${product.name}」加入购物车');
+                  },
+                ),
+              ),
       ),
     );
   }
 
-  Widget _resultList() {
+  void _toast(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message, style: AppTypography.sans(size: 14, color: AppColors.riceWhite)),
+          backgroundColor: AppColors.inkGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+}
+
+class _ResultList extends StatelessWidget {
+  const _ResultList({
+    required this.products,
+    required this.onOpen,
+    required this.onAdd,
+  });
+
+  final List<TeaProduct> products;
+  final ValueChanged<TeaProduct> onOpen;
+  final ValueChanged<TeaProduct> onAdd;
+
+  @override
+  Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
       children: [
-        for (final p in _results)
+        for (final product in products)
           ProductListTile(
-            product: p,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p)),
-            ),
-            onAdd: () => showCartSnack(context, p.name),
+            product: product,
+            onTap: () => onOpen(product),
+            onAdd: () => onAdd(product),
           ),
       ],
     );
   }
+}
 
-  Widget _noResult() {
+class _NoResultView extends StatelessWidget {
+  const _NoResultView({required this.onSearch});
+
+  final ValueChanged<String> onSearch;
+
+  @override
+  Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenMargin, AppSpacing.xl, AppSpacing.screenMargin, AppSpacing.xl),
@@ -114,19 +179,35 @@ class _SearchScreenState extends State<SearchScreen> {
         const SizedBox(height: AppSpacing.md),
         _ChipWrap(
           labels: const ['普洱生茶', '普洱熟茶', '古树普洱', '普洱茶饼', '普洱茶砖', '普洱茶礼盒'],
-          onTap: (_) {},
+          onTap: onSearch,
         ),
         const SizedBox(height: AppSpacing.xl),
-        SectionHeader(title: '为你推荐'),
+        const SectionHeader(title: '为你推荐'),
         const SizedBox(height: AppSpacing.xs),
-        for (final p in SampleData.recommended)
-          ProductListTile(
-            product: p,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p)),
-            ),
-            onAdd: () => showCartSnack(context, p.name),
-          ),
+        AsyncValueView(
+          future: const ProductRepository().allProducts(),
+          builder: (context, products) {
+            return Column(
+              children: [
+                for (final product in products.take(4))
+                  ProductListTile(
+                    product: product,
+                    onTap: () => context.pushNamed(
+                      AppRoutes.product,
+                      pathParameters: {'id': product.id},
+                      extra: product,
+                    ),
+                    onAdd: () {
+                      AppStateScope.of(context).addToCart(
+                        product,
+                        product.specs.isNotEmpty ? product.specs.first : product.unit,
+                      );
+                    },
+                  ),
+              ],
+            );
+          },
+        ),
       ],
     );
   }
@@ -174,9 +255,18 @@ class _SearchField extends StatelessWidget {
 }
 
 class _DiscoverView extends StatelessWidget {
-  const _DiscoverView({required this.onTapKeyword, required this.trending});
+  const _DiscoverView({
+    required this.hotSearches,
+    required this.history,
+    required this.onTapKeyword,
+    required this.onClearHistory,
+    required this.trending,
+  });
 
+  final List<String> hotSearches;
+  final List<String> history;
   final ValueChanged<String> onTapKeyword;
+  final VoidCallback onClearHistory;
   final List<(String, String)> trending;
 
   @override
@@ -197,17 +287,22 @@ class _DiscoverView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        _ChipWrap(labels: SampleData.hotSearch, onTap: onTapKeyword),
+        _ChipWrap(labels: hotSearches, onTap: onTapKeyword),
         const SizedBox(height: AppSpacing.xl),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('搜索历史', style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
-            Text('清空', style: AppTypography.caption),
+            GestureDetector(
+              onTap: onClearHistory,
+              child: Text('清空', style: AppTypography.caption),
+            ),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        _ChipWrap(labels: SampleData.searchHistory, onTap: onTapKeyword),
+        history.isEmpty
+            ? Text('暂无搜索历史', style: AppTypography.caption)
+            : _ChipWrap(labels: history, onTap: onTapKeyword),
         const SizedBox(height: AppSpacing.xl),
         Text('大家都在搜', style: AppTypography.sans(size: 14, weight: FontWeight.w600)),
         const SizedBox(height: AppSpacing.xs),
@@ -250,16 +345,16 @@ class _ChipWrap extends StatelessWidget {
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       children: [
-        for (final l in labels)
+        for (final label in labels)
           GestureDetector(
-            onTap: () => onTap(l),
+            onTap: () => onTap(label),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
                 color: AppColors.ricePaperGray.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(AppRadius.chip),
               ),
-              child: Text(l, style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
+              child: Text(label, style: AppTypography.sans(size: 13, color: AppColors.textSecondary)),
             ),
           ),
       ],

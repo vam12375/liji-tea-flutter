@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/sample_data.dart';
-import '../models/tea_product.dart';
+import '../navigation/app_router.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -9,39 +11,17 @@ import '../widgets/primary_button.dart';
 import '../widgets/quantity_stepper.dart';
 import '../widgets/status_view.dart';
 import '../widgets/tea_image.dart';
-import 'coupon_screen.dart';
-import 'order_confirm_screen.dart';
-import 'product_detail_screen.dart';
 
 /// 购物车 — full cart with selection, quantity steppers, and an empty state.
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  late List<_Line> _lines = [
-    for (final c in SampleData.cart)
-      _Line(product: c.product, spec: c.spec, quantity: c.quantity, selected: true),
-  ];
-
-  int get _total {
-    var sum = 0;
-    for (final l in _lines) {
-      if (l.selected) sum += l.product.price * l.quantity;
-    }
-    return sum;
-  }
-
-  bool get _allSelected => _lines.isNotEmpty && _lines.every((l) => l.selected);
-
-  void _clear() => setState(() => _lines = []);
-
-  @override
   Widget build(BuildContext context) {
-    if (_lines.isEmpty) return const _EmptyCart();
+    final appState = AppStateScope.of(context);
+    final lines = appState.cart;
+    final total = appState.cartTotal;
+    if (lines.isEmpty) return const _EmptyCart();
     return SafeArea(
       child: Column(
         children: [
@@ -51,8 +31,11 @@ class _CartScreenState extends State<CartScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('购物车 (${_lines.length})', style: AppTypography.h2),
-                TextButton(onPressed: _clear, child: Text('清空', style: AppTypography.body)),
+                Text('购物车 (${lines.length})', style: AppTypography.h2),
+                TextButton(
+                  onPressed: appState.clearCart,
+                  child: Text('清空', style: AppTypography.body),
+                ),
               ],
             ),
           ),
@@ -62,7 +45,7 @@ class _CartScreenState extends State<CartScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
               child: Text(
-                _total >= 299 ? '已满 ¥299,享免运费' : '满 ¥299 可享免运费,还差 ¥${299 - _total}',
+                total >= 299 ? '已满 ¥299,享免运费' : '满 ¥299 可享免运费,还差 ¥${299 - total}',
                 style: AppTypography.sans(size: 12, color: AppColors.pineGreen),
               ),
             ),
@@ -70,47 +53,43 @@ class _CartScreenState extends State<CartScreen> {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screenMargin, 0, AppSpacing.screenMargin, AppSpacing.md),
+                              AppSpacing.screenMargin, 0, AppSpacing.screenMargin, AppSpacing.md),
               children: [
-                for (var i = 0; i < _lines.length; i++)
+                for (final line in lines)
                   _CartRow(
-                    line: _lines[i],
-                    onToggle: () => setState(() => _lines[i].selected = !_lines[i].selected),
-                    onQty: (q) => setState(() => _lines[i].quantity = q),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => ProductDetailScreen(product: _lines[i].product))),
+                    line: line,
+                    onToggle: () => appState.setCartLineSelected(
+                      line.product.id,
+                      line.spec,
+                      !line.selected,
+                    ),
+                    onQty: (q) => appState.setCartQuantity(line.product.id, line.spec, q),
+                    onTap: () => context.pushNamed(
+                      AppRoutes.product,
+                      pathParameters: {'id': line.product.id},
+                      extra: line.product,
+                    ),
                   ),
                 const SizedBox(height: AppSpacing.md),
                 _CouponRow(onTap: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const CouponScreen()));
+                  context.pushNamed(AppRoutes.coupons);
                 }),
               ],
             ),
           ),
           _CartBottomBar(
-            allSelected: _allSelected,
-            total: _total,
+            allSelected: appState.allCartSelected,
+            total: total,
             onToggleAll: () {
-              final next = !_allSelected;
-              setState(() {
-                for (final l in _lines) {
-                  l.selected = next;
-                }
-              });
+              appState.setAllCartSelected(!appState.allCartSelected);
             },
-            onCheckout: _total == 0
+            onCheckout: total == 0
                 ? null
-                : () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => OrderConfirmScreen(
-                          lines: [
-                            for (final l in _lines)
-                              if (l.selected)
-                                CartItem(product: l.product, spec: l.spec, quantity: l.quantity),
-                          ],
-                          total: _total,
-                        ),
+                : () => context.pushNamed(
+                      AppRoutes.orderConfirm,
+                      extra: OrderConfirmPayload(
+                        lines: appState.selectedCartItems,
+                        total: total,
                       ),
                     ),
           ),
@@ -120,18 +99,10 @@ class _CartScreenState extends State<CartScreen> {
   }
 }
 
-class _Line {
-  _Line({required this.product, required this.spec, required this.quantity, required this.selected});
-  final TeaProduct product;
-  final String spec;
-  int quantity;
-  bool selected;
-}
-
 class _CartRow extends StatelessWidget {
   const _CartRow({required this.line, required this.onToggle, required this.onQty, required this.onTap});
 
-  final _Line line;
+  final CartLine line;
   final VoidCallback onToggle;
   final ValueChanged<int> onQty;
   final VoidCallback onTap;
@@ -303,7 +274,7 @@ class _EmptyCart extends StatelessWidget {
             title: '购物车还是空的',
             subtitle: '去挑选心仪的茶叶,开启一段茶香之旅吧',
             actionLabel: '去逛逛',
-            onAction: () {},
+            onAction: () => context.goNamed(AppRoutes.category),
           ),
           const SizedBox(height: AppSpacing.xxl),
           Center(child: Text('— 为你推荐 —', style: AppTypography.caption)),
@@ -314,19 +285,26 @@ class _EmptyCart extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: TeaImage(swatch: p.swatch, radius: AppRadius.image, iconSize: 28),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(p.name, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
-                        Text('¥${p.price}',
-                            style: AppTypography.serif(
-                                size: 14, weight: FontWeight.w600, color: AppColors.inkGreen)),
-                      ],
+                    child: GestureDetector(
+                      onTap: () => context.pushNamed(
+                        AppRoutes.product,
+                        pathParameters: {'id': p.id},
+                        extra: p,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: TeaImage(swatch: p.swatch, radius: AppRadius.image, iconSize: 28),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(p.name, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
+                          Text('¥${p.price}',
+                              style: AppTypography.serif(
+                                  size: 14, weight: FontWeight.w600, color: AppColors.inkGreen)),
+                        ],
+                      ),
                     ),
                   ),
                 ),

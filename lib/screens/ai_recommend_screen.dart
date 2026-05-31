@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/sample_data.dart';
+import '../navigation/app_router.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/product_list_tile.dart';
 import '../widgets/soft_card.dart';
-import 'product_detail_screen.dart';
 
 /// AI 茶推荐 — a short questionnaire that yields tea recommendations.
 class AiRecommendScreen extends StatefulWidget {
@@ -135,10 +137,17 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
         for (final p in SampleData.recommended)
           ProductListTile(
             product: p,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p)),
+            onTap: () => context.pushNamed(
+              AppRoutes.product,
+              pathParameters: {'id': p.id},
+              extra: p,
             ),
-            onAdd: () {},
+            onAdd: () {
+              AppStateScope.of(context).addToCart(
+                p,
+                p.specs.isNotEmpty ? p.specs.first : p.unit,
+              );
+            },
           ),
         const SizedBox(height: AppSpacing.lg),
         SecondaryButton(

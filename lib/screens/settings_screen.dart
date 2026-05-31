@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../navigation/app_router.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/soft_card.dart';
-import 'about_screen.dart';
-import 'login_screen.dart';
 
 /// 设置 — app settings with notification / dark-mode toggles.
 class SettingsScreen extends StatefulWidget {
@@ -16,9 +17,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notify = true;
-  bool _darkMode = false;
-
   void _toast(String msg) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -46,8 +44,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+              AppStateScope.of(context).signOut();
+              context.pushNamed(AppRoutes.login);
             },
             child: Text('退出', style: AppTypography.sans(size: 14, color: AppColors.inkGreen)),
           ),
@@ -58,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = AppStateScope.of(context);
     return Scaffold(
       appBar: AppBar(title: Text('设置', style: AppTypography.h3)),
       body: SafeArea(
@@ -72,17 +71,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   _SwitchRow(
                     label: '消息通知',
-                    value: _notify,
-                    onChanged: (v) => setState(() => _notify = v),
+                    value: appState.notificationsEnabled,
+                    onChanged: appState.setNotificationsEnabled,
                   ),
                   const Divider(height: 1, color: AppColors.divider),
                   _SwitchRow(
                     label: '夜茶模式(深色)',
-                    value: _darkMode,
-                    onChanged: (v) {
-                      setState(() => _darkMode = v);
-                      if (v) _toast('夜茶深色模式即将上线,敬请期待');
-                    },
+                    value: appState.themeMode == ThemeMode.dark,
+                    onChanged: (v) => appState.setThemeMode(v ? ThemeMode.dark : ThemeMode.light),
                   ),
                 ],
               ),
@@ -98,8 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _MenuRow(label: '隐私政策', onTap: () => _toast('隐私政策')),
                   _MenuRow(
                     label: '关于我们',
-                    onTap: () => Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (_) => const AboutScreen())),
+                    onTap: () => context.pushNamed(AppRoutes.about),
                     last: true,
                   ),
                 ],

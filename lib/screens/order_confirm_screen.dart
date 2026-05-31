@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../models/tea_product.dart';
+import '../navigation/app_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/soft_card.dart';
-import 'payment_screen.dart';
 
 /// 订单确认 — order confirmation before payment.
 class OrderConfirmScreen extends StatelessWidget {
@@ -99,8 +100,9 @@ class OrderConfirmScreen extends StatelessWidget {
       ),
       bottomNavigationBar: _BottomBar(
         total: total,
-        onSubmit: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => PaymentScreen(total: total)),
+        onSubmit: () => context.pushNamed(
+          AppRoutes.payment,
+          pathParameters: {'total': '$total'},
         ),
       ),
     );
