@@ -34,7 +34,7 @@ class _AppShellState extends State<AppShell> {
     const CategoryScreen(),
     const TeaSpaceScreen(),
     const CartScreen(),
-    const ProfileScreen(),
+    ProfileScreen(onSelectTab: (i) => setState(() => _index = i)),
   ];
 
   @override

@@ -12,15 +12,27 @@ import 'customer_service_screen.dart';
 import 'favorites_screen.dart';
 import 'footprint_screen.dart';
 import 'gift_customize_screen.dart';
+import 'notification_screen.dart';
 import 'order_list_screen.dart';
+import 'points_screen.dart';
 import 'settings_screen.dart';
 
-/// 我的 — dark-green profile header, order shortcuts card, and a menu list.
+/// 我的 — light profile header with a stats grid (积分 / 优惠券 / 收藏 / 足迹),
+/// three feature entries (我的茶席 / 我的拼团 / 推荐有礼), order shortcuts and a menu list.
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.onSelectTab});
+
+  /// Switches the root bottom-nav tab (e.g. jump to 茶席). Index 2 = 茶席.
+  final ValueChanged<int>? onSelectTab;
 
   void _push(BuildContext context, Widget screen) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
+
+  void _comingSoon(BuildContext context, String name) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('「$name」敬请期待')));
   }
 
   @override
@@ -31,23 +43,26 @@ class ProfileScreen extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           _header(context),
-          Transform.translate(
-            offset: const Offset(0, -24),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
-                  child: _orderCard(context),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
-                  child: _menuList(context),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
+            child: _statsCard(context),
           ),
+          const SizedBox(height: AppSpacing.md),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
+            child: _quickEntries(context),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
+            child: _orderCard(context),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin),
+            child: _menuList(context),
+          ),
+          const SizedBox(height: AppSpacing.xl),
         ],
       ),
     );
@@ -55,45 +70,65 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _header(BuildContext context) {
     final topInset = MediaQuery.of(context).padding.top;
-    return Container(
-      width: double.infinity,
-      color: AppColors.inkGreen,
+    return Padding(
       padding: EdgeInsets.fromLTRB(
-          AppSpacing.lg, topInset + AppSpacing.sm, AppSpacing.lg, AppSpacing.xl + AppSpacing.md),
+          AppSpacing.lg, topInset + AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              _circleIcon(Icons.notifications_none_rounded,
+                  () => _push(context, const NotificationScreen())),
+              const SizedBox(width: AppSpacing.sm),
               _circleIcon(Icons.settings_outlined,
                   () => _push(context, const SettingsScreen())),
-              const SizedBox(width: AppSpacing.sm),
-              _circleIcon(Icons.chat_bubble_outline,
-                  () => _push(context, const CustomerServiceScreen())),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               Container(
                 width: 64,
                 height: 64,
-                decoration: const BoxDecoration(color: AppColors.riceWhite, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: AppColors.ricePaperGray.withValues(alpha: 0.6),
+                  shape: BoxShape.circle,
+                ),
                 padding: const EdgeInsets.all(8),
                 child: Image.asset('assets/images/logo_mark.png'),
               ),
               const SizedBox(width: AppSpacing.md),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('茶人小李',
-                      style: AppTypography.serif(
-                          size: 22, weight: FontWeight.w600, color: AppColors.riceWhite)),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text('欢迎来到 LIJI · TEA',
-                      style: AppTypography.latin(size: 13, color: AppColors.riceGray)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('茶人小李',
+                            style: AppTypography.serif(
+                                size: 22,
+                                weight: FontWeight.w600,
+                                color: AppColors.charcoalBlack)),
+                        const SizedBox(width: AppSpacing.xs),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(AppRadius.chip),
+                          ),
+                          child: Text('黄金茶友',
+                              style: AppTypography.sans(
+                                  size: 11, weight: FontWeight.w600, color: AppColors.gold)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text('欢迎来到 LIJI · TEA',
+                        style: AppTypography.latin(size: 13, color: AppColors.textTertiary)),
+                  ],
+                ),
               ),
             ],
           ),
@@ -109,11 +144,79 @@ class ProfileScreen extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: AppColors.riceWhite.withValues(alpha: 0.12),
+          color: AppColors.ricePaperGray.withValues(alpha: 0.6),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 18, color: AppColors.riceWhite),
+        child: Icon(icon, size: 18, color: AppColors.charcoalBlack),
       ),
+    );
+  }
+
+  Widget _statsCard(BuildContext context) {
+    final stats = <(String, String, VoidCallback)>[
+      ('860', '积分', () => _push(context, const PointsScreen())),
+      ('3', '优惠券', () => _push(context, const CouponScreen())),
+      ('12', '收藏', () => _push(context, const FavoritesScreen())),
+      ('24', '足迹', () => _push(context, const FootprintScreen())),
+    ];
+    return SoftCard(
+      child: Row(
+        children: [
+          for (final s in stats)
+            Expanded(
+              child: GestureDetector(
+                onTap: s.$3,
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  children: [
+                    Text(s.$1,
+                        style: AppTypography.serif(
+                            size: 22, weight: FontWeight.w700, color: AppColors.inkGreen)),
+                    const SizedBox(height: 2),
+                    Text(s.$2, style: AppTypography.caption),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickEntries(BuildContext context) {
+    final entries = <(IconData, String, VoidCallback)>[
+      (Icons.local_cafe_outlined, '我的茶席',
+          () => onSelectTab?.call(2)),
+      (Icons.groups_outlined, '我的拼团', () => _comingSoon(context, '我的拼团')),
+      (Icons.card_giftcard_outlined, '推荐有礼', () => _comingSoon(context, '推荐有礼')),
+    ];
+    return Row(
+      children: [
+        for (var i = 0; i < entries.length; i++) ...[
+          Expanded(
+            child: GestureDetector(
+              onTap: entries[i].$3,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.cardSurface,
+                  borderRadius: BorderRadius.circular(AppRadius.card),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Column(
+                  children: [
+                    Icon(entries[i].$1, size: 24, color: AppColors.pineGreen),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(entries[i].$2, style: AppTypography.sans(size: 12)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (i != entries.length - 1) const SizedBox(width: AppSpacing.sm),
+        ],
+      ],
     );
   }
 
