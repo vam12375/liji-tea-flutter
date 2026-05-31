@@ -432,34 +432,74 @@ class _EmptyCart extends StatelessWidget {
           Text('购物车', style: AppTypography.h2),
           const SizedBox(height: AppSpacing.xxl),
           StatusView(
-            icon: Icons.shopping_basket_outlined,
+            image: 'assets/images/empty_cart.png',
             title: '购物车还是空的',
             subtitle: '去挑选心仪的茶叶,开启一段茶香之旅吧',
             actionLabel: '去逛逛',
             onAction: () {},
           ),
           const SizedBox(height: AppSpacing.xxl),
-          Center(child: Text('— 为你推荐 —', style: AppTypography.caption)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Expanded(child: Divider(color: AppColors.divider)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Text('为你推荐', style: AppTypography.caption),
+              ),
+              const Expanded(child: Divider(color: AppColors.divider)),
+            ],
+          ),
           const SizedBox(height: AppSpacing.md),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (final p in SampleData.recommended.take(3))
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1,
-                          child: TeaImage(swatch: p.swatch, radius: AppRadius.image, iconSize: 28),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(p.name, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
-                        Text('¥${p.price}',
-                            style: AppTypography.serif(
-                                size: 14, weight: FontWeight.w600, color: AppColors.inkGreen)),
-                      ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(AppRadius.card),
+                      ),
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 1,
+                            child: p.thumbAsset != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(AppRadius.image),
+                                    child: Image.asset(p.thumbAsset!, fit: BoxFit.cover))
+                                : TeaImage(swatch: p.swatch, radius: AppRadius.image, iconSize: 28),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(p.name, style: AppTypography.sans(size: 13, weight: FontWeight.w600)),
+                          const SizedBox(height: 2),
+                          Text(p.tagline,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.sans(size: 10, color: AppColors.textTertiary)),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Row(
+                            children: [
+                              Text('¥${p.price}',
+                                  style: AppTypography.serif(
+                                      size: 14, weight: FontWeight.w600, color: AppColors.inkGreen)),
+                              const Spacer(),
+                              Container(
+                                width: 22,
+                                height: 22,
+                                decoration: const BoxDecoration(
+                                    color: AppColors.inkGreen, shape: BoxShape.circle),
+                                child: const Icon(Icons.add, size: 14, color: AppColors.riceWhite),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

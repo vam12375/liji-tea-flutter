@@ -100,9 +100,9 @@ class _SearchScreenState extends State<SearchScreen> {
         Center(
           child: Column(
             children: [
-              Icon(Icons.emoji_food_beverage_outlined,
-                  size: 56, color: AppColors.pineGreen.withValues(alpha: 0.5)),
-              const SizedBox(height: AppSpacing.md),
+              Image.asset('assets/images/search_empty.png',
+                  width: 180, height: 142, fit: BoxFit.contain),
+              const SizedBox(height: AppSpacing.sm),
               Text('未找到相关内容', style: AppTypography.h3),
               const SizedBox(height: AppSpacing.xs),
               Text('换个关键词试试,或去看看推荐内容', style: AppTypography.body),

@@ -38,10 +38,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 padding: const EdgeInsets.all(AppSpacing.xxl),
                 child: Center(
                   child: StatusView(
-                    icon: Icons.favorite_border,
-                    title: '还没有收藏',
-                    subtitle: '把喜欢的茶收藏起来,方便随时回看',
-                    actionLabel: '去逛逛',
+                    image: 'assets/images/empty_favorites.png',
+                    title: '暂无收藏内容',
+                    subtitle: '收藏喜欢的茶叶和器物,方便下次查找',
+                    actionLabel: '去发现好茶',
                     onAction: () => Navigator.of(context).pop(),
                   ),
                 ),

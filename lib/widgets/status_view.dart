@@ -9,14 +9,16 @@ import 'primary_button.dart';
 class StatusView extends StatelessWidget {
   const StatusView({
     super.key,
-    required this.icon,
+    this.icon,
+    this.image,
     required this.title,
     this.subtitle,
     this.actionLabel,
     this.onAction,
-  });
+  }) : assert(icon != null || image != null, 'provide an icon or image');
 
-  final IconData icon;
+  final IconData? icon;
+  final String? image;
   final String title;
   final String? subtitle;
   final String? actionLabel;
@@ -27,15 +29,18 @@ class StatusView extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: AppColors.ricePaperGray.withValues(alpha: 0.5),
-            shape: BoxShape.circle,
+        if (image != null)
+          Image.asset(image!, width: 200, height: 158, fit: BoxFit.contain)
+        else
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: AppColors.ricePaperGray.withValues(alpha: 0.5),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 52, color: AppColors.pineGreen.withValues(alpha: 0.6)),
           ),
-          child: Icon(icon, size: 52, color: AppColors.pineGreen.withValues(alpha: 0.6)),
-        ),
         const SizedBox(height: AppSpacing.lg),
         Text(title, style: AppTypography.h3),
         if (subtitle != null) ...[
